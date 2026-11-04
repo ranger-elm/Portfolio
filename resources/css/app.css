@@ -1,0 +1,965 @@
+@import 'tailwindcss';
+@import './fonts.css';
+
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+  --color-night: #0b0d12;
+  --color-surface: #141824;
+  --color-elevated: #1a2030;
+  --color-brand: #8b5cf6;
+  --color-brand-soft: #a78bfa;
+  --color-accent: #38bdf8;
+  --color-ink: #e7eaf0;
+  --color-muted: #aeb6c8;
+  --color-line: #283044;
+
+  --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-fa: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+
+  --radius-card: 0.7rem;
+  --radius-control: 0.5rem;
+  --radius-frame: 1.15rem;
+  --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@layer base {
+  :root {
+    --font-body: var(--font-sans);
+    color-scheme: dark;
+  }
+
+  html[dir='rtl'] {
+    --font-body: var(--font-fa);
+  }
+
+  body {
+    @apply bg-night text-ink font-normal antialiased;
+    font-family: var(--font-body);
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--color-brand) 40%, transparent);
+  }
+
+  [dir='rtl'] body {
+    letter-spacing: 0;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+@layer components {
+  /* ── Type ─────────────────────────────────────────────────────────────────
+     One scale, two optometries. Persian is not mirrored English: Vazirmatn
+     needs a smaller display size because the approved copy runs longer, zero
+     letter spacing because tracking unjoins cursive letters, and more leading
+     for its cascading descenders. Labels also drop the Latin mono face, which
+     carries no Arabic glyphs at all. */
+
+  .t-display {
+    font-size: clamp(2.3rem, 1.35rem + 3.9vw, 4rem);
+    font-weight: 700;
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+  }
+
+  .t-title {
+    font-size: clamp(1.4rem, 1.16rem + 0.95vw, 1.95rem);
+    font-weight: 700;
+    line-height: 1.16;
+    letter-spacing: -0.022em;
+  }
+
+  .t-sub {
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
+  }
+
+  .t-lede {
+    font-size: 1.05rem;
+    line-height: 1.72;
+    max-inline-size: 58ch;
+  }
+
+  .t-label {
+    font-family: var(--font-mono);
+    font-size: 0.69rem;
+    line-height: 1.5;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  [dir='rtl'] .t-display {
+    font-size: clamp(1.75rem, 1.05rem + 2.9vw, 2.9rem);
+    line-height: 1.52;
+    letter-spacing: 0;
+  }
+
+  [dir='rtl'] .t-title {
+    font-size: clamp(1.2rem, 1.02rem + 0.72vw, 1.6rem);
+    line-height: 1.6;
+    letter-spacing: 0;
+  }
+
+  [dir='rtl'] .t-sub {
+    font-size: 1.06rem;
+    line-height: 1.62;
+    letter-spacing: 0;
+  }
+
+  [dir='rtl'] .t-lede {
+    font-size: 1.02rem;
+    line-height: 2.02;
+  }
+
+  [dir='rtl'] .t-label {
+    font-family: var(--font-fa);
+    font-size: 0.8rem;
+    line-height: 1.9;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* ── Section grid ─────────────────────────────────────────────────────────
+     The title lives in a fixed inline-start rail and the content beside it, so
+     a page reads as one document instead of a stack of equal boxes. Logical
+     properties throughout: the rail moves to the right in Persian by itself,
+     and no row is blindly reversed. */
+
+  .section {
+    padding-block: clamp(3.25rem, 2.35rem + 3.6vw, 5.75rem);
+  }
+
+  .section + .section {
+    border-block-start: 1px solid color-mix(in oklab, var(--color-line) 72%, transparent);
+  }
+
+  .section-inner {
+    margin-inline: auto;
+    max-inline-size: 78rem;
+    padding-inline: 1.25rem;
+  }
+
+  .section-rail {
+    padding-block-end: 1.15rem;
+  }
+
+  .rail-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.4rem 1.25rem;
+  }
+
+  .section-body {
+    min-inline-size: 0;
+  }
+
+  @media (min-width: 64rem) {
+    .section-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 14rem) minmax(0, 1fr);
+    }
+
+    .section-rail {
+      padding-block-end: 0;
+      border-inline-end: 1px solid color-mix(in oklab, var(--color-line) 55%, transparent);
+    }
+
+    /* The rail box stretches, so the title can ride along while the body
+       scrolls past it. */
+    .rail-inner {
+      display: block;
+      position: sticky;
+      top: 5rem;
+      padding-inline-end: 2rem;
+    }
+
+    .section-body {
+      padding-inline-start: 2rem;
+    }
+
+    /* In the rail, anything after the title is supporting metadata, so it
+       stacks under the heading instead of crowding the same baseline. */
+    .rail-inner > * + * {
+      margin-block-start: 0.9rem;
+    }
+  }
+
+  /* ── Controls ─────────────────────────────────────────────────────────────
+     Violet fill marks the single primary action in view; secondary actions are
+     hairlines only, so a page never presents two equally loud buttons. */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-block-size: 2.75rem;
+    padding-block: 0.5rem;
+    padding-inline: 1.15rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-control);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.2s var(--ease-soft), border-color 0.2s var(--ease-soft),
+      color 0.2s var(--ease-soft);
+  }
+
+  .btn--primary {
+    background: var(--color-brand);
+    border-color: var(--color-brand);
+    color: var(--color-night);
+  }
+
+  .btn--primary:hover {
+    background: var(--color-brand-soft);
+    border-color: var(--color-brand-soft);
+  }
+
+  .btn--quiet {
+    border-color: var(--color-line);
+    color: var(--color-ink);
+  }
+
+  .btn--quiet:hover {
+    border-color: color-mix(in oklab, var(--color-brand) 55%, var(--color-line));
+  }
+
+  .btn--icon {
+    inline-size: 2.75rem;
+    padding-inline: 0;
+  }
+
+  .t-hint {
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
+
+  [dir='rtl'] .t-hint {
+    font-size: 0.83rem;
+    line-height: 1.95;
+  }
+
+  .link-quiet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-block-size: 2.5rem;
+    font-size: 0.88rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    border-block-end: 1px solid transparent;
+    transition: color 0.2s var(--ease-soft), border-color 0.2s var(--ease-soft);
+  }
+
+  .link-quiet:hover {
+    color: var(--color-ink);
+    border-block-end-color: color-mix(in oklab, var(--color-brand) 60%, transparent);
+  }
+
+  .link-rail {
+    color: var(--color-brand-soft);
+    font-weight: 600;
+  }
+
+  /* Current page is carried by weight plus a rule, never by colour alone. */
+  .nav-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.5rem;
+    padding-inline: 0.7rem;
+    font-size: 0.9rem;
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: color 0.2s var(--ease-soft);
+  }
+
+  .nav-link:hover {
+    color: var(--color-ink);
+  }
+
+  .nav-link[aria-current='page'] {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .nav-link[aria-current='page']::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0.7rem;
+    inset-block-end: 0.15rem;
+    block-size: 2px;
+    border-radius: 2px;
+    background: var(--color-brand);
+  }
+
+  .nav-link--block {
+    display: flex;
+    min-block-size: 2.9rem;
+    padding-inline: 0.35rem;
+  }
+
+  .nav-link--block[aria-current='page']::after {
+    inset-inline: auto;
+    inset-inline-start: 0;
+    inset-block: 0.7rem;
+    block-size: auto;
+    inline-size: 2px;
+    border-radius: 2px;
+  }
+
+  /* The tagline belongs to the lockup, so it stays Latin in both locales and
+     hangs off a hairline instead of wearing a label. The border flips with the
+     document because it is on the outer element, not the isolated text. */
+  .brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    color: var(--color-ink);
+    text-decoration: none;
+  }
+
+  .brand-mark {
+    font-size: 1.12rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .brand-tag {
+    padding-inline-start: 0.6rem;
+    border-inline-start: 1px solid var(--color-line);
+    font-size: 0.72rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+
+  @media (max-width: 40rem) {
+    .brand-tag {
+      display: none;
+    }
+  }
+
+  .switcher {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    overflow: clip;
+  }
+
+  .switcher-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-inline-size: 2.5rem;
+    min-block-size: 2.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-muted);
+    text-decoration: none;
+    transition: background-color 0.2s var(--ease-soft), color 0.2s var(--ease-soft);
+  }
+
+  .switcher li + li .switcher-link {
+    border-inline-start: 1px solid var(--color-line);
+  }
+
+  .switcher-link:hover {
+    color: var(--color-ink);
+  }
+
+  .switcher-link[aria-current='true'] {
+    background: var(--color-elevated);
+    color: var(--color-ink);
+  }
+
+  /* ── Cards and data ───────────────────────────────────────────────────────
+     There is no placeholder artwork: with one real project and no screenshots
+     supplied, a card has to hold itself up on structure alone. */
+
+  .project-card {
+    position: relative;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: color-mix(in oklab, var(--color-surface) 90%, transparent);
+    padding: 1.5rem 1.55rem 1.6rem;
+    transition: border-color 0.25s var(--ease-soft);
+  }
+
+  .project-card:hover,
+  .project-card:focus-within {
+    border-color: color-mix(in oklab, var(--color-brand) 34%, var(--color-line));
+  }
+
+  /* The violet spine marks projects as the primary content type, and only
+     lights when someone is actually pointing at the card. */
+  .project-card::before {
+    content: '';
+    position: absolute;
+    inset-block: 1.15rem;
+    inset-inline-start: -1px;
+    inline-size: 2px;
+    border-start-end-radius: 2px;
+    border-end-end-radius: 2px;
+    background: var(--color-brand);
+    opacity: 0;
+    transition: opacity 0.25s var(--ease-soft);
+  }
+
+  .project-card:hover::before,
+  .project-card:focus-within::before {
+    opacity: 0.85;
+  }
+
+  /* Status and technologies are data, so they are marked up and ruled as a
+     definition list rather than another floating label. */
+  .spec-row {
+    display: grid;
+    gap: 0.4rem;
+    padding-block: 0.7rem;
+    border-block-start: 1px solid color-mix(in oklab, var(--color-line) 60%, transparent);
+  }
+
+  @media (min-width: 34rem) {
+    .spec-row {
+      grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
+      gap: 1.25rem;
+      align-items: baseline;
+    }
+  }
+
+  /* In the detail aside the list starts the column, so it needs no rule
+     above the first row. */
+  .spec--flush > .spec-row:first-child {
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+
+  .spec-row dd {
+    margin-inline-start: 0;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 1.6rem;
+    padding-inline: 0.5rem;
+    border: 1px solid var(--color-line);
+    border-radius: 0.4rem;
+    background: color-mix(in oklab, var(--color-night) 55%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-ink);
+    text-decoration: none;
+    transition: border-color 0.2s var(--ease-soft);
+  }
+
+  a.chip:hover {
+    border-color: color-mix(in oklab, var(--color-brand) 55%, var(--color-line));
+  }
+
+  /* Chips hold both Latin technology names and Persian feature words, so the
+     mono face is swapped in Persian the same way labels are. */
+  [dir='rtl'] .chip {
+    font-family: var(--font-fa);
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-block: 0.2rem;
+    padding-inline: 0.6rem;
+    border: 1px solid color-mix(in oklab, var(--color-line) 85%, transparent);
+    border-radius: 999px;
+  }
+
+  .status-word {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  [dir='rtl'] .status-word {
+    font-family: var(--font-fa);
+    font-size: 0.78rem;
+    line-height: 1.7;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* The lab is a log rather than a gallery: ruled rows say "entries I keep
+     adding to", which is truer to one item than a grid of identical tiles. */
+  .entry {
+    padding-block: 1.35rem;
+    border-block-start: 1px solid color-mix(in oklab, var(--color-line) 60%, transparent);
+  }
+
+  .entry:first-child {
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+
+  .entry:last-child {
+    padding-block-end: 0;
+  }
+
+  @media (min-width: 48rem) {
+    .entry {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr);
+      column-gap: 2rem;
+    }
+  }
+
+  /* Closing call to action: the hero's registration ticks, spent once, and the
+     only panel on the site with no border of its own. */
+  .frame {
+    position: relative;
+    border-radius: var(--radius-frame);
+    background: var(--color-elevated);
+    padding: clamp(1.6rem, 1.15rem + 2.2vw, 2.85rem);
+  }
+
+  .frame::before,
+  .frame::after {
+    content: '';
+    position: absolute;
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    /* `border-block-start: 2px solid` below resolves to this via currentColor. */
+    color: color-mix(in oklab, var(--color-brand) 68%, var(--color-line));
+  }
+
+  .frame::before {
+    inset-block-start: -1px;
+    inset-inline-start: -1px;
+    border-block-start: 2px solid;
+    border-inline-start: 2px solid;
+    border-start-start-radius: var(--radius-frame);
+  }
+
+  .frame::after {
+    inset-block-end: -1px;
+    inset-inline-end: -1px;
+    border-block-end: 2px solid;
+    border-inline-end: 2px solid;
+    border-end-end-radius: var(--radius-frame);
+  }
+
+  /* ── Hero artwork ─────────────────────────────────────────────────────────
+     An isometric stack of translucent planes, lit with the two brand accents,
+     framed by hairline grid and coordinate details. */
+
+  .hero-stage {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: clip;
+    isolation: isolate;
+    perspective: 1100px;
+  }
+
+  .hero-stage::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(42% 42% at 30% 26%, color-mix(in oklab, var(--color-brand) 30%, transparent), transparent 72%),
+      radial-gradient(38% 38% at 72% 74%, color-mix(in oklab, var(--color-accent) 18%, transparent), transparent 74%);
+  }
+
+  .hero-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(to right, color-mix(in oklab, var(--color-line) 66%, transparent) 0 1px, transparent 1px 26px),
+      repeating-linear-gradient(to bottom, color-mix(in oklab, var(--color-line) 66%, transparent) 0 1px, transparent 1px 26px);
+    mask-image: radial-gradient(58% 58% at 50% 50%, #000 18%, transparent 76%);
+  }
+
+  .hero-rig {
+    position: absolute;
+    inset: 15%;
+    transform-style: preserve-3d;
+    transform: rotateX(56deg) rotateZ(-32deg);
+    animation: hero-drift 22s ease-in-out infinite alternate;
+  }
+
+  .hero-plate {
+    position: absolute;
+    inset: 0;
+    border: 1px solid color-mix(in oklab, var(--color-brand) 24%, var(--color-line));
+    border-radius: 1.1rem;
+    background: linear-gradient(
+      150deg,
+      color-mix(in oklab, var(--color-brand) 13%, transparent),
+      color-mix(in oklab, var(--color-surface) 78%, transparent) 55%,
+      transparent
+    );
+  }
+
+  .hero-plate--mid {
+    inset: 7%;
+    transform: translateZ(2.4rem);
+    border-color: color-mix(in oklab, var(--color-accent) 22%, var(--color-line));
+    background: linear-gradient(150deg, color-mix(in oklab, var(--color-accent) 10%, transparent), transparent 62%);
+  }
+
+  .hero-plate--top {
+    inset: 15%;
+    transform: translateZ(4.6rem);
+    border-color: color-mix(in oklab, var(--color-brand) 34%, var(--color-line));
+    background: linear-gradient(150deg, color-mix(in oklab, var(--color-elevated) 92%, transparent), transparent 68%);
+  }
+
+  .hero-plate--top::after {
+    content: '';
+    position: absolute;
+    inset: 22% 18%;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-line) 90%, transparent) 0 1px,
+      transparent 1px 9px
+    );
+    opacity: 0.85;
+  }
+
+  .hero-code,
+  .hero-token {
+    position: absolute;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    line-height: 1.5;
+    letter-spacing: 0;
+  }
+
+  .hero-code {
+    inset-inline-start: 2%;
+    bottom: 8%;
+    max-inline-size: 92%;
+    overflow-wrap: anywhere;
+    border: 1px solid var(--color-line);
+    border-radius: 0.55rem;
+    background: color-mix(in oklab, var(--color-surface) 94%, transparent);
+    padding: 0.5rem 0.65rem;
+    color: var(--color-muted);
+  }
+
+  .hero-token {
+    inset-inline-end: 3%;
+    top: 12%;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--color-brand) 30%, var(--color-line));
+    background: color-mix(in oklab, var(--color-elevated) 88%, transparent);
+    padding: 0.2rem 0.55rem;
+    color: var(--color-brand-soft);
+  }
+
+  .hero-meta {
+    position: absolute;
+    inset-inline-end: 4%;
+    bottom: 5%;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: color-mix(in oklab, var(--color-muted) 70%, transparent);
+  }
+
+  .hero-tick {
+    position: absolute;
+    width: 0.7rem;
+    height: 0.7rem;
+    /* The `1px solid` shorthands below resolve to this via currentColor. */
+    color: color-mix(in oklab, var(--color-line) 95%, transparent);
+  }
+
+  .hero-tick--start-top {
+    inset-inline-start: 3%;
+    top: 4%;
+    border-top: 1px solid;
+    border-inline-start: 1px solid;
+  }
+
+  .hero-tick--end-bottom {
+    inset-inline-end: 3%;
+    bottom: 4%;
+    border-bottom: 1px solid;
+    border-inline-end: 1px solid;
+  }
+
+  .hero-syntax-key {
+    color: var(--color-brand-soft);
+  }
+
+  .hero-syntax-fn {
+    color: var(--color-accent);
+  }
+
+  .hero-syntax-string {
+    color: var(--color-ink);
+  }
+
+  .hero-rise > * {
+    animation: hero-rise 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  .hero-rise > *:nth-child(2) {
+    animation-delay: 0.05s;
+  }
+
+  .hero-rise > *:nth-child(3) {
+    animation-delay: 0.1s;
+  }
+
+  .hero-rise > *:nth-child(4) {
+    animation-delay: 0.15s;
+  }
+
+  .hero-rise > *:nth-child(5) {
+    animation-delay: 0.2s;
+  }
+
+  .skill-card {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: color-mix(in oklab, var(--color-surface) 92%, transparent);
+    padding: 0.85rem 1rem;
+  }
+
+  .skill-card--core {
+    border-color: color-mix(in oklab, var(--color-brand) 42%, var(--color-line));
+    background: linear-gradient(
+      160deg,
+      color-mix(in oklab, var(--color-brand) 12%, var(--color-surface)),
+      var(--color-surface) 70%
+    );
+  }
+
+  /* Skill hub. Without JS it is a plain grid of cards with every panel listed,
+     so all content is reachable. With JS the cards become a 3D ring whose
+     rotation is derived from --hub-active (index) and --hub-drag (pointer). */
+
+  .hub-ring {
+    --hub-step: calc(360deg / var(--hub-count, 1));
+    --hub-spin: 1;
+    --hub-drag: 0deg;
+    --hub-card-w: 6.75rem;
+    --hub-card-h: 4.25rem;
+    --hub-radius: clamp(7rem, 26vw, 9.25rem);
+    --hub-depth: 2.25rem;
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  [dir='rtl'] .hub-ring {
+    --hub-spin: -1;
+  }
+
+  .hub-track {
+    display: contents;
+  }
+
+  .hub-panels {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .js .hub-ring {
+    display: block;
+    position: relative;
+    height: 15rem;
+    overflow: clip;
+    perspective: 800px;
+    touch-action: pan-y;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* The active skill is lit from below, the way the hero plates are: one soft
+     light plus a measured horizon line, both painted before the track so the
+     cards always sit in front of it. */
+  .js .hub-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+          to right,
+          transparent,
+          color-mix(in oklab, var(--color-brand) 45%, transparent),
+          transparent
+        )
+        center bottom 13% / 62% 1px no-repeat,
+      radial-gradient(
+          closest-side,
+          color-mix(in oklab, var(--color-brand) 13%, transparent),
+          transparent 76%
+        )
+        center 44% / 100% 72% no-repeat;
+  }
+
+  .js .hub-ring.is-dragging {
+    cursor: grabbing;
+  }
+
+  .js .hub-track {
+    position: absolute;
+    inset: 0;
+    display: block;
+    transform-style: preserve-3d;
+    transition: transform 0.55s cubic-bezier(0.22, 0.61, 0.36, 1);
+    transform: rotateY(calc((0deg - var(--hub-active, 0) * var(--hub-step) - var(--hub-drag)) * var(--hub-spin)));
+  }
+
+  .js .hub-card {
+    position: absolute;
+    top: 50%;
+    inset-inline-start: 50%;
+    width: var(--hub-card-w);
+    height: var(--hub-card-h);
+    margin-inline-start: calc(var(--hub-card-w) / -2);
+    margin-block-start: calc(var(--hub-card-h) / -2);
+    cursor: grab;
+    backface-visibility: hidden;
+    transform: rotateY(calc(var(--i, 0) * var(--hub-step) * var(--hub-spin))) translateZ(var(--hub-radius));
+  }
+
+  .js .hub-card[aria-selected='true'] {
+    transform: rotateY(calc(var(--i, 0) * var(--hub-step) * var(--hub-spin)))
+      translateZ(calc(var(--hub-radius) + var(--hub-depth)));
+    border-color: color-mix(in oklab, var(--color-brand) 62%, var(--color-line));
+    box-shadow: 0 1.25rem 2.5rem -1rem color-mix(in oklab, var(--color-brand) 55%, transparent);
+  }
+
+  /* A panel is re-shown by clearing the hidden attribute, which restarts this
+     animation without any extra class bookkeeping in JS. */
+  .js .hub-panel {
+    animation: hub-focus 0.35s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  }
+
+  /* Skill panel: the same violet spine language as the project card, because
+     both mean "this is the live one". */
+  .panel {
+    position: relative;
+    overflow: clip;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    background: color-mix(in oklab, var(--color-elevated) 94%, transparent);
+    padding: 1.4rem 1.5rem;
+  }
+
+  .panel::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 2px;
+    background: color-mix(in oklab, var(--color-brand) 72%, transparent);
+  }
+
+  .panel-eyebrow {
+    color: var(--color-brand-soft);
+  }
+
+  /* Text inside a ring card is sized to a 108x68 box, and the Persian tier
+     label needs a little more room than the Latin one. */
+  .hub-card-name {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+
+  .hub-card-tier {
+    display: block;
+    margin-block-start: 0.35rem;
+    font-size: 0.68rem;
+    line-height: 1.35;
+    color: var(--color-muted);
+  }
+
+  .hub-card--core .hub-card-tier {
+    color: var(--color-brand-soft);
+  }
+
+  [dir='rtl'] .hub-card-tier {
+    font-size: 0.74rem;
+    line-height: 1.5;
+  }
+}
+
+@keyframes hero-drift {
+  from {
+    transform: rotateX(56deg) rotateZ(-32deg);
+  }
+  to {
+    transform: rotateX(50deg) rotateZ(-25deg) translateZ(1.1rem);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.6rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hub-focus {
+  from {
+    opacity: 0;
+    transform: translateY(0.4rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rig {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
