@@ -119,6 +119,23 @@ class InternalPagesTest extends TestCase
         $this->get('/en/projects/planino/edit')->assertNotFound();
     }
 
+    public function test_not_found_pages_keep_the_language_of_their_url(): void
+    {
+        foreach (['en' => 'ltr', 'fa' => 'rtl'] as $locale => $direction) {
+            $response = $this->get('/'.$locale.'/does-not-exist');
+            $html = $response->getContent();
+
+            $response->assertNotFound();
+            $this->assertStringContainsString('<html lang="'.$locale.'" dir="'.$direction.'"', $html);
+            $this->assertStringContainsString(__('common.notFoundTitle', [], $locale), $html);
+            $this->assertStringContainsString('content="noindex, follow"', $html);
+            $this->assertStringNotContainsString('Not Found</title>', $html);
+
+            // An error page is still inside the site: navigation and switching survive.
+            $this->assertStringContainsString('/'.$locale.'/contact', $html);
+        }
+    }
+
     public function test_project_detail_shows_the_section_as_current_in_the_navigation(): void
     {
         $html = $this->get('/en/projects/planino')->getContent();

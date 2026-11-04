@@ -82,7 +82,14 @@ class HomepageContentTest extends TestCase
             foreach ($matches[1] as $href) {
                 $path = parse_url($href, PHP_URL_PATH);
 
-                if ($path === null || str_starts_with($path, '/fonts/') || str_starts_with($path, '/build/')) {
+                if ($path === null || ! str_starts_with($path, '/')) {
+                    continue;
+                }
+
+                // The web server answers for files under public/, the router for everything else.
+                if (is_file(public_path(ltrim($path, '/')))) {
+                    $checked++;
+
                     continue;
                 }
 

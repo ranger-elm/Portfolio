@@ -40,7 +40,7 @@
                     id="nav-toggle"
                     aria-controls="primary-navigation"
                     aria-expanded="false"
-                    class="inline-flex size-10 items-center justify-center rounded-md border border-line text-ink md:hidden">
+                    class="inline-flex size-11 items-center justify-center rounded-control border border-line text-ink md:hidden">
                 <span class="sr-only">{{ __('common.toggleNavigation') }}</span>
                 <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/>

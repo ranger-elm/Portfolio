@@ -396,6 +396,16 @@
     color: var(--color-ink);
   }
 
+  /* The 2.5rem control scale is sized for a pointer; a finger needs 2.75rem. */
+  @media (max-width: 48rem) {
+    .brand,
+    .link-quiet,
+    .nav-link,
+    .switcher-link {
+      min-block-size: 2.75rem;
+    }
+  }
+
   /* ── Cards and data ───────────────────────────────────────────────────────
      There is no placeholder artwork: with one real project and no screenshots
      supplied, a card has to hold itself up on structure alone. */

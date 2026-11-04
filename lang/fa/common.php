@@ -8,4 +8,7 @@
   'mainNavigation' => 'ناوبری اصلی',
   'toggleNavigation' => 'باز و بسته کردن ناوبری',
   'language' => 'زبان',
+  'notFoundTitle' => 'صفحه پیدا نشد',
+  'notFoundBody' => 'آن صفحه اینجا نیست. ممکن است جابه‌جا شده باشد یا پیوند قدیمی باشد.',
+  'backToHome' => 'بازگشت به خانه',
 );

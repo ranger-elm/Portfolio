@@ -1,59 +1,135 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Elia — Beyond the Interface
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A bilingual portfolio site (English and Persian) for Elia, a PHP & Laravel developer.
+Laravel 12 views over a config-driven content layer: no database, no admin, no third-party
+requests. Persian is a first-class direction, not a mirrored stylesheet.
 
-## About Laravel
+## Stack
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+| Layer | Choice |
+| --- | --- |
+| Runtime | PHP `^8.2` (developed on 8.5.6), Laravel `^12.0` |
+| Frontend | Blade anonymous components, Vite 7, Tailwind CSS 4 (CSS-first `@theme` tokens) |
+| Typography | Self-hosted WOFF2: Space Grotesk (Latin), Vazirmatn arabic+latin subsets (Persian); system mono for micro labels |
+| Data | `config/content.php` + `lang/{en,fa}/*.php` — `DB_CONNECTION=none`, no migrations |
+| Tests | PHPUnit feature tests that parse the rendered HTML with DOMXPath |
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Local development
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+```bash
+composer install
+npm install
+cp .env.example .env && php artisan key:generate
+npm run dev &                      # vite
+php artisan serve --port=8931      # http://127.0.0.1:8931/en and /fa
+```
 
-## Learning Laravel
+Verification, run from the repo root:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+php artisan test                                   # feature + design guards
+npm run build                                      # production assets into public/build
+php artisan route:list                             # 6 named routes × 2 locales
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Layout of the interesting parts
 
-## Laravel Sponsors
+- `resources/css/app.css` — the whole design system: tokens, type scale (separate optical
+  scale for Persian), `.frame`, `.spec-row`, `.btn`, `.switcher`, the 3D skill hub.
+- `resources/views/components/section.blade.php` — the editorial rail (`section-rail` +
+  `section-body`) every section is built from.
+- `resources/views/components/skill-hub.blade.php` + `resources/js/app.js` — the ring;
+  ARIA tab semantics are added by JS only, so no-JS markup stays valid.
+- `app/Http/Middleware/SetLocale.php` — locale comes from the URL prefix and is applied
+  globally, which is what lets an unmatched path render a Persian 404.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Measured budget (2026-11-04, `npm run build`)
 
-### Premium Partners
+| Asset | Raw | Gzip |
+| --- | --- | --- |
+| `app-*.css` | 35.95 kB | 8.12 kB |
+| `app-*.js` | 2.90 kB | 1.26 kB |
+| HTML per page | 9.3 – 30.0 kB | — |
+| Fonts, English | 1 file, 22.3 kB | preloaded |
+| Fonts, Persian | 2 files, 45.2 + 33.7 kB | both preloaded |
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+Subresource requests on a page load: 4 (stylesheet, script, two fonts on `/fa`, one on `/en`).
+No CDN, no analytics, no external origin.
 
-## Contributing
+Accessibility floors verified in the browser: 16 distinct text/background pairs, all passing
+WCAG AA (lowest 4.59:1); `:focus-visible` = 2px solid brand violet with 2px offset; the brand
+mark, nav links, language switcher, menu toggle, links and buttons all reach 44px on touch
+widths while desktop keeps its 40px scale (the inline project-title link stays text-sized and
+is paired with a 44px button); zero horizontal overflow from 320px to 1440px in both
+directions; `prefers-reduced-motion` collapses animation and transition durations globally.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Deployment
 
-## Code of Conduct
+The web server document root must be `public/`. `public/build/` is gitignored, so assets
+have to be built as part of the release (or copied as a build artifact).
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+git clone <repository> && cd portfolio
+composer install --no-dev --optimize-autoloader
+cp .env.example .env
+php artisan key:generate
 
-## Security Vulnerabilities
+npm ci
+npm run build
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+chown -R www-data:www-data storage bootstrap/cache
+```
 
-## License
+Environment values that must change before a release:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+| Key | Required value | Why |
+| --- | --- | --- |
+| `APP_ENV` | `production` | enables production error handling |
+| `APP_DEBUG` | `false` | `true` renders stack traces and configuration to visitors |
+| `APP_URL` | the public origin | `canonical`, `og:url` and `hreflang` are generated from it |
+| `APP_KEY` | from `key:generate` | session/cookie encryption |
+
+There are no migrations — never run `php artisan migrate` here; the connection is `none`.
+
+Apache serves this app through the committed `public/.htaccess`. For nginx, the equivalent
+is `try_files $uri $uri/ /index.php?$query_string;`.
+
+Smoke test after release:
+
+```bash
+for p in en fa en/projects fa/projects en/lab en/about en/contact en/projects/planino; do
+  printf '%-24s %s\n' "$p" "$(curl -s -o /dev/null -w '%{http_code}' "https://example.com/$p")"
+done
+curl -sI https://example.com/ | grep -i '^location'   # expect /en
+```
+
+Cache the three artifacts again after every deploy (`config:clear`, `route:clear`,
+`view:clear` first if the previous release left stale files behind); stale caches are the
+usual cause of a release that appears not to have taken effect.
+
+## Outstanding decisions and known issues
+
+Content waiting on confirmed facts (nothing here is filled in with guesses):
+
+- `config/portfolio.php` `contact.*` (email, GitHub, LinkedIn) are empty, so those links
+  render on no page; the contact page shows nothing until they are supplied.
+- `config/content.php` has one project (Planino) with `repository: null`, `demo: null`, and
+  no year or role, and all six §6.2 case-study sections are empty.
+- The four added About paragraphs and the skills heading wording need approval.
+- No `og:image` exists, so social previews are text-only. Adding one needs an approved
+  visual asset — a raster card cannot be produced from the identity without a decision.
+
+Housekeeping:
+
+- `composer validate` reports a content-hash mismatch in `composer.lock` that predates the
+  metadata edits in this file. Fixing it needs network access: `composer update --lock`.
+- `package.json` still lists `axios`, which no code imports.
+- `.env.example` carries unused `REDIS_*`, `AWS_*` and `MAIL_*` keys from the Laravel
+  skeleton; the local `.env` still has `APP_NAME=Laravel`, which is not rendered anywhere.
+- `public/favicon.ico` is the skeleton's 0-byte placeholder; browsers use `/favicon.svg`.
+- Locale URLs are case-sensitive: `/EN` is a 404, and a trailing slash canonicalises to the
+  unprefixed form (`/en/` publishes `canonical` for `/en`).
+- No `sitemap.xml`: 13 URLs, reachable from the header and footer on every page.

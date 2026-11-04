@@ -9,14 +9,19 @@
     <title>@yield('title', __('meta.home.title'))</title>
     <meta name="description" content="@yield('description', __('meta.home.description'))">
 
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+
     <link rel="canonical" href="{{ url()->current() }}">
-    <meta name="robots" content="index, follow">
+    <meta name="robots" content="@yield('robots', 'index, follow')">
 
     @if (request()->route())
         @foreach (config('portfolio.locales') as $code => $localeMeta)
             <link rel="alternate" hreflang="{{ $code }}"
                   href="{{ route(request()->route()->getName(), array_merge(request()->route()->parameters, ['locale' => $code])) }}">
         @endforeach
+
+        <link rel="alternate" hreflang="x-default"
+              href="{{ route(request()->route()->getName(), array_merge(request()->route()->parameters, ['locale' => config('portfolio.default_locale')])) }}">
     @endif
 
     <meta property="og:type" content="website">
@@ -33,6 +38,7 @@
 
     @if (app()->getLocale() === 'fa')
         <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/vazirmatn-arabic-var.woff2">
+        <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/vazirmatn-latin-var.woff2">
     @else
         <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/space-grotesk-latin-var.woff2">
     @endif
