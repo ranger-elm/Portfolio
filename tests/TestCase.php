@@ -36,12 +36,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function unapprovedDestinationsIn(string $html): array
     {
-        libxml_use_internal_errors(true);
-
-        $document = new DOMDocument();
-        $document->loadHTML('<?xml encoding="utf-8"?>'.$html);
-
-        libxml_clear_errors();
+        $document = $this->document($html);
 
         $approved = $this->approvedDestinations();
         $localHost = parse_url(config('app.url'), PHP_URL_HOST);
@@ -84,5 +79,17 @@ abstract class TestCase extends BaseTestCase
             $this->unapprovedDestinationsIn($html),
             "An unconfirmed destination is linked on {$page}."
         );
+    }
+
+    protected function document(string $html): DOMDocument
+    {
+        libxml_use_internal_errors(true);
+
+        $document = new DOMDocument();
+        $document->loadHTML('<?xml encoding="utf-8"?>'.$html);
+
+        libxml_clear_errors();
+
+        return $document;
     }
 }

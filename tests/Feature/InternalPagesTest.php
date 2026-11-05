@@ -2,7 +2,6 @@
 
 namespace Tests\Feature;
 
-use DOMDocument;
 use DOMXPath;
 use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
@@ -336,17 +335,5 @@ class InternalPagesTest extends TestCase
                 $this->assertSame($label->nodeValue, $heading->getAttribute('id'));
             }
         }
-    }
-
-    private function document(string $html): DOMDocument
-    {
-        libxml_use_internal_errors(true);
-
-        $document = new DOMDocument();
-        $document->loadHTML('<?xml encoding="utf-8"?>'.$html);
-
-        libxml_clear_errors();
-
-        return $document;
     }
 }

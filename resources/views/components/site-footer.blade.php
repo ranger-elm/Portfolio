@@ -6,9 +6,20 @@
         'about' => __('nav.about'),
         'contact' => __('nav.contact'),
     ];
-    $email = config('portfolio.contact.email');
-    $github = config('portfolio.contact.github');
-    $linkedin = config('portfolio.contact.linkedin');
+
+    // Config is the only source: a channel with no URL renders nothing, so the
+    // site can never offer a destination the owner has not written down.
+    $channels = [];
+    foreach (config('portfolio.contact') as $key => $url) {
+        if (empty($url)) {
+            continue;
+        }
+
+        $channels[] = [
+            'url' => $key === 'email' ? 'mailto:'.$url : $url,
+            'label' => $key === 'email' ? __('contact.emailMe') : config("portfolio.contact_labels.$key"),
+        ];
+    }
 @endphp
 
 <footer class="footer">
@@ -32,26 +43,18 @@
             </ul>
         </nav>
 
-        @if ($email || $github || $linkedin)
+        @if (! empty($channels))
             <div class="footer-group">
                 <h2 class="t-label text-muted">{{ __('contact.findMeOnline') }}</h2>
 
                 <ul role="list" class="footer-list mt-1">
-                    @if ($email)
+                    @foreach ($channels as $channel)
                         <li>
-                            <a href="mailto:{{ $email }}" class="link-quiet">{{ __('contact.emailMe') }}</a>
+                            <a href="{{ $channel['url'] }}" rel="me noopener"
+                               @if (str_starts_with($channel['url'], 'http')) target="_blank" @endif
+                               class="link-quiet"><bdi>{{ $channel['label'] }}</bdi></a>
                         </li>
-                    @endif
-                    @if ($github)
-                        <li>
-                            <a href="{{ $github }}" rel="me noopener" target="_blank" class="link-quiet">GitHub</a>
-                        </li>
-                    @endif
-                    @if ($linkedin)
-                        <li>
-                            <a href="{{ $linkedin }}" rel="me noopener" target="_blank" class="link-quiet">LinkedIn</a>
-                        </li>
-                    @endif
+                    @endforeach
                 </ul>
             </div>
         @endif

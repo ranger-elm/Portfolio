@@ -5,17 +5,20 @@
 
 @section('content')
     @php
-        $email = config('portfolio.contact.email');
-
         // Destinations come from config only; an unset channel renders nothing,
         // so the page can never offer a link that was never confirmed.
-        $channels = [
-            ['url' => $email ? 'mailto:' . $email : null, 'label' => __('contact.emailMe'), 'value' => $email],
-            ['url' => config('portfolio.contact.github'), 'label' => 'GitHub', 'value' => config('portfolio.contact.github')],
-            ['url' => config('portfolio.contact.linkedin'), 'label' => 'LinkedIn', 'value' => config('portfolio.contact.linkedin')],
-        ];
+        $channels = [];
+        foreach (config('portfolio.contact') as $key => $url) {
+            if (empty($url)) {
+                continue;
+            }
 
-        $available = array_filter($channels, fn ($channel) => ! empty($channel['url']));
+            $channels[] = [
+                'url' => $key === 'email' ? 'mailto:'.$url : $url,
+                'label' => $key === 'email' ? __('contact.emailMe') : config("portfolio.contact_labels.$key"),
+                'value' => $url,
+            ];
+        }
     @endphp
 
     <x-section label-id="contact-heading" :title="__('contact.heading')" :level="1">
@@ -23,13 +26,13 @@
 
         <p class="t-title mt-10 text-ink">{{ __('contact.letsBuild') }}</p>
 
-        @if (! empty($available))
+        @if (! empty($channels))
             <h2 class="t-label mt-8 text-muted">{{ __('contact.findMeOnline') }}</h2>
 
             <dl class="spec mt-2">
-                @foreach ($available as $channel)
+                @foreach ($channels as $channel)
                     <div class="spec-row">
-                        <dt class="t-label text-brand-soft">{{ $channel['label'] }}</dt>
+                        <dt class="t-label text-brand-soft"><bdi>{{ $channel['label'] }}</bdi></dt>
 
                         <dd>
                             <a href="{{ $channel['url'] }}" rel="me noopener"

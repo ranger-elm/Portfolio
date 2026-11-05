@@ -177,9 +177,15 @@ usual cause of a release that appears not to have taken effect.
 
 Content waiting on confirmed facts (nothing here is filled in with guesses):
 
-- `contact.github` is approved and renders in the site footer with `rel="me"`. `contact.email`
-  and `contact.linkedin` stay null: no LinkedIn exists, and the only address on record sits in
-  local git config, so publishing it is the owner's spam tradeoff to make, not ours.
+- Four contact channels are configured and render in the footer and on `/contact`, each with
+  `rel="me noopener"`: GitHub, LinkedIn, Instagram and Telegram. The last two arrived as
+  `@handles` and are stored as their canonical profile URLs. `contact.email` is the only
+  channel still null — the address exists in local git config and publishing it is the
+  owner's spam tradeoff to make, not ours.
+- Of the four, only Telegram could be verified from this machine: `t.me/RangerELM` answers
+  with a non-empty bio where a made-up handle answers with an empty one. LinkedIn returns
+  `999` to every client and Instagram login-walls every probe including `/embed/`, so a typo
+  in either URL would only surface when a visitor clicked it.
 - Planino links `https://github.com/ranger-elm/Planino_v1` — the repository holding the newest
   code, despite the older-sounding name — and has no `demo`, because nothing is deployed. Four
   case-study sections (§6.2) are written from the owner's own answers plus the repository;

@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use DOMXPath;
-use DOMDocument;
 use Tests\TestCase;
 
 class HomepageContentTest extends TestCase
@@ -121,16 +120,5 @@ class HomepageContentTest extends TestCase
 
             $this->assertGreaterThan(10, $checked);
         }
-    }
-
-    private function document(string $html): DOMDocument
-    {
-        $document = new DOMDocument();
-
-        libxml_use_internal_errors(true);
-        $document->loadHTML('<?xml encoding="utf-8"?>'.$html);
-        libxml_clear_errors();
-
-        return $document;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use DOMXPath;
 use Tests\TestCase;
 
 /**
@@ -73,17 +74,47 @@ class DestinationGuardTest extends TestCase
         );
     }
 
-    public function test_an_unconfirmed_contact_channel_still_renders_nothing(): void
+    public function test_the_email_channel_stays_closed_until_it_is_approved(): void
     {
-        // LinkedIn was never supplied, so neither its URL nor its label may appear.
-        $this->assertNull(config('portfolio.contact.linkedin'));
+        // The address exists only in local git config, so it is the one channel
+        // with no approval yet: neither a mailto: nor the address itself may
+        // reach a rendered page.
         $this->assertNull(config('portfolio.contact.email'));
 
-        foreach (['/en', '/fa'] as $path) {
-            $html = $this->get($path)->assertOk()->getContent();
-
-            $this->assertStringNotContainsString('linkedin.com', $html);
-            $this->assertStringNotContainsString('mailto:', $html);
+        foreach (['/en', '/fa', '/en/contact', '/fa/contact'] as $path) {
+            $this->assertStringNotContainsString('mailto:', $this->get($path)->assertOk()->getContent(), $path);
         }
+    }
+
+    public function test_every_confirmed_channel_renders_in_the_footer_and_on_the_contact_page(): void
+    {
+        $confirmed = array_values(array_filter(config('portfolio.contact')));
+        $this->assertNotEmpty($confirmed);
+
+        foreach (['en', 'fa'] as $locale) {
+            $footer = $this->hrefs($this->get("/$locale")->assertOk()->getContent(), '//footer//a/@href');
+            $body = $this->hrefs($this->get("/$locale/contact")->assertOk()->getContent(), '//main//a/@href');
+
+            // Compared against the config list itself, so a channel that
+            // disappears, duplicates or changes place is a failure rather than a
+            // silent reordering — and nothing unconfirmed can slip into the group.
+            $this->assertSame($confirmed, array_values(array_intersect($footer, $confirmed)), "the $locale footer channel list.");
+            $this->assertSame($confirmed, array_values(array_intersect($body, $confirmed)), "the $locale contact page channel list.");
+
+            foreach (config('portfolio.contact_labels') as $key => $label) {
+                $this->assertStringContainsString($label, $this->get('/'.$locale)->getContent(), "the $key channel has no label in the $locale footer.");
+            }
+        }
+    }
+
+    private function hrefs(string $html, string $query): array
+    {
+        $hrefs = [];
+
+        foreach ((new DOMXPath($this->document($html)))->query($query) as $attribute) {
+            $hrefs[] = $attribute->nodeValue;
+        }
+
+        return $hrefs;
     }
 }
