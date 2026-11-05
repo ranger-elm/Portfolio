@@ -93,7 +93,7 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 53.87 kB | 10.94 kB |
+| `app-*.css` | 54.20 kB | 11.00 kB |
 | `app-*.js` | 6.36 kB | 2.39 kB |
 | HTML per page | 13.7 – 34.6 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
@@ -134,9 +134,10 @@ WCAG AA (lowest 4.59:1); `:focus-visible` = 2px solid brand violet with 2px offs
 mark, nav links, language switcher, menu toggle, links and buttons all reach 44px on touch
 widths while desktop keeps its 40px scale (the inline project-title link stays text-sized and
 is paired with a 44px button); no horizontal overflow from 320px to 1440px in either direction
-on any page except `/projects`, whose card grid keeps a 20rem minimum track and scrolls
-horizontally by 20px at exactly 320px (see Outstanding decisions and known issues);
-`prefers-reduced-motion` collapses animation and transition durations globally.
+on any page, `/projects` included — below ~340px of content the card grid's 20rem floor yields
+to the container width (`minmax(min(20rem,100%),1fr)`), which `tests/Feature/LayoutGuardTest.php`
+pins so a bare floor cannot come back; `prefers-reduced-motion` collapses animation and
+transition durations globally.
 
 ## Deployment
 
@@ -233,15 +234,11 @@ Waiting on the owner's approval, all of them introduced by the contact form:
 - No `og:image` exists, so social previews are text-only. Adding one needs an approved
   visual asset — a raster card cannot be produced from the identity without a decision.
 
-Known layout defect, measured and not yet fixed:
+Known layout behaviour, deliberate:
 
-- The projects card grid is `grid-cols-[repeat(auto-fit,minmax(20rem,1fr))]`
-  (`resources/views/pages/projects.blade.php:10`). At a 320px viewport the content column is
-  265px wide but the `minmax()` floor forces the track to 320px, so the card runs past the edge
-  and `documentElement.scrollWidth` is 340 against `innerWidth` 320 — a 20px horizontal scroll
-  on `/en/projects`, and 35px past the left edge on `/fa/projects`. It predates the glass stage
-  and that stage did not touch the file. The one-token fix is `minmax(min(20rem,100%),1fr)`;
-  it needs approval because it changes a rule the approved design pass already shipped.
+- Card grids repeat with `auto-fit`, so their track floor is the only thing keeping a card
+  inside the viewport. Every grid in the site therefore bounds its floor to the container
+  (`min(20rem,100%)` or `0`), and `/projects` is measured clean at 320px in both directions.
 
 Housekeeping:
 
