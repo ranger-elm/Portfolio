@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use DOMXPath;
+use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 
 /**
@@ -88,22 +89,47 @@ class DestinationGuardTest extends TestCase
 
     public function test_every_confirmed_channel_renders_in_the_footer_and_on_the_contact_page(): void
     {
-        $confirmed = array_values(array_filter(config('portfolio.contact')));
+        $confirmed = array_filter(config('portfolio.contact'));
         $this->assertNotEmpty($confirmed);
 
         foreach (['en', 'fa'] as $locale) {
-            $footer = $this->hrefs($this->get("/$locale")->assertOk()->getContent(), '//footer//a/@href');
-            $body = $this->hrefs($this->get("/$locale/contact")->assertOk()->getContent(), '//main//a/@href');
+            $home = $this->get("/$locale")->assertOk()->getContent();
+            $contact = $this->get("/$locale/contact")->assertOk()->getContent();
 
             // Compared against the config list itself, so a channel that
             // disappears, duplicates or changes place is a failure rather than a
             // silent reordering — and nothing unconfirmed can slip into the group.
-            $this->assertSame($confirmed, array_values(array_intersect($footer, $confirmed)), "the $locale footer channel list.");
-            $this->assertSame($confirmed, array_values(array_intersect($body, $confirmed)), "the $locale contact page channel list.");
+            $this->assertSame(array_values($confirmed), array_values(array_intersect($this->hrefs($home, '//footer//a/@href'), $confirmed)), "the $locale footer channel list.");
+            $this->assertSame(array_values($confirmed), array_values(array_intersect($this->hrefs($contact, '//main//a/@href'), $confirmed)), "the $locale contact page channel list.");
 
-            foreach (config('portfolio.contact_labels') as $key => $label) {
-                $this->assertStringContainsString($label, $this->get('/'.$locale)->getContent(), "the $key channel has no label in the $locale footer.");
+            foreach (array_keys($confirmed) as $key) {
+                $label = Lang::get("contact.channels.$key", [], $locale);
+
+                $this->assertStringContainsString($label, $home, "the $key channel has no label in the $locale footer.");
+                $this->assertStringContainsString($label, $contact, "the $key channel has no label on the $locale contact page.");
             }
+        }
+    }
+
+    public function test_the_persian_channel_labels_are_persian(): void
+    {
+        // Brand names are the one class of label that survives a localization
+        // pass untranslated, and on a page that translates everything else it
+        // reads as a defect rather than as a brand. Email is not in this map:
+        // its label is a sentence, so it comes from contact.emailMe.
+        $labels = Lang::get('contact.channels', [], 'en');
+
+        $this->assertSame(
+            array_values(array_diff(array_keys(config('portfolio.contact')), ['email'])),
+            array_keys($labels),
+            'a configured channel has no label, or a label has no channel behind it.'
+        );
+
+        foreach ($labels as $key => $english) {
+            $persian = Lang::get("contact.channels.$key", [], 'fa');
+
+            $this->assertNotSame($english, $persian, "the $key channel carries the English label in Persian.");
+            $this->assertMatchesRegularExpression('/[\x{0600}-\x{06FF}]/u', $persian, "the $key Persian label has no Persian script in it.");
         }
     }
 

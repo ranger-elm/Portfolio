@@ -5,6 +5,12 @@
   'letsConnect' => 'Let\'s Connect',
   'sendMessage' => 'Send a Message',
   'emailMe' => 'Email Me',
+  'channels' => array (
+    'github' => 'GitHub',
+    'linkedin' => 'LinkedIn',
+    'instagram' => 'Instagram',
+    'telegram' => 'Telegram',
+  ),
   'findMeOnline' => 'Find Me Online',
   'yourName' => 'Your Name',
   'yourEmail' => 'Your Email',

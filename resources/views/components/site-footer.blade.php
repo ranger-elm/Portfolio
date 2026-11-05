@@ -17,7 +17,7 @@
 
         $channels[] = [
             'url' => $key === 'email' ? 'mailto:'.$url : $url,
-            'label' => $key === 'email' ? __('contact.emailMe') : config("portfolio.contact_labels.$key"),
+            'label' => $key === 'email' ? __('contact.emailMe') : __("contact.channels.$key"),
         ];
     }
 @endphp

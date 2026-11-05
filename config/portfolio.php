@@ -51,17 +51,6 @@ return [
         'telegram' => 'https://t.me/RangerELM',
     ],
 
-    // Brand names, deliberately not in lang/{en,fa}: they are the same words in
-    // both locales and translating them would read as an untranslated leak
-    // everywhere else on the Persian site. Email is the exception — its label is
-    // a sentence, so it comes from contact.emailMe instead.
-    'contact_labels' => [
-        'github' => 'GitHub',
-        'linkedin' => 'LinkedIn',
-        'instagram' => 'Instagram',
-        'telegram' => 'Telegram',
-    ],
-
     // The order the project detail page walks its case study in, per §6.2. The
     // parity test reads this same list, so a section can never be added to the
     // page without a heading in both locales.

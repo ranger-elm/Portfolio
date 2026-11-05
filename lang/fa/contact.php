@@ -5,6 +5,12 @@
   'letsConnect' => 'در ارتباط باشیم',
   'sendMessage' => 'ارسال پیام',
   'emailMe' => 'ارسال ایمیل',
+  'channels' => array (
+    'github' => 'گیت‌هاب',
+    'linkedin' => 'لینکدین',
+    'instagram' => 'اینستاگرام',
+    'telegram' => 'تلگرام',
+  ),
   'findMeOnline' => 'من را در فضای آنلاین پیدا کنید',
   'yourName' => 'نام شما',
   'yourEmail' => 'ایمیل شما',

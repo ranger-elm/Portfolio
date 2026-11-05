@@ -179,7 +179,10 @@ Content waiting on confirmed facts (nothing here is filled in with guesses):
 
 - Four contact channels are configured and render in the footer and on `/contact`, each with
   `rel="me noopener"`: GitHub, LinkedIn, Instagram and Telegram. The last two arrived as
-  `@handles` and are stored as their canonical profile URLs. `contact.email` is the only
+  `@handles` and are stored as their canonical profile URLs. Their labels live in
+  `contact.channels` in each lang file, so the Persian page reads گیت‌هاب / لینکدین /
+  اینستاگرام / تلگرام rather than four Latin brand names on an otherwise translated page;
+  a channel added to config without both label entries fails. `contact.email` is the only
   channel still null — the address exists in local git config and publishing it is the
   owner's spam tradeoff to make, not ours.
 - Of the four, only Telegram could be verified from this machine: `t.me/RangerELM` answers
