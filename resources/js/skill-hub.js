@@ -25,6 +25,10 @@ const initHub = (hub) => {
         active = 0;
     }
 
+    // The ring turns by this unwrapped counter: wrapping it back to 0 at the end
+    // would send the transition the long way round, a full turn instead of a step.
+    let position = active;
+
     let spin = readSpin(hub);
     let dragPointerId = null;
     let dragStartX = 0;
@@ -33,6 +37,14 @@ const initHub = (hub) => {
     let dragPixelsPerStep = 48;
     let suppressClick = false;
     let pendingFrame = 0;
+
+    const wrap = (index) => ((index % count) + count) % count;
+
+    // The shortest signed distance from the current card to an absolute index.
+    const deltaToward = (index) => {
+        const forward = wrap(index - active);
+        return forward > count / 2 ? forward - count : forward;
+    };
 
     // The track owns the tabs directly, so it carries the tablist role.
     track.setAttribute('role', 'tablist');
@@ -45,9 +57,10 @@ const initHub = (hub) => {
         panel.tabIndex = 0;
     });
 
-    const setActive = (index, { focus = false } = {}) => {
-        active = ((index % count) + count) % count;
-        ring.style.setProperty('--hub-active', String(active));
+    const advance = (delta, { focus = false } = {}) => {
+        position += delta;
+        active = wrap(position);
+        ring.style.setProperty('--hub-active', String(position));
 
         cards.forEach((card, i) => {
             card.setAttribute('role', 'tab');
@@ -65,7 +78,7 @@ const initHub = (hub) => {
         }
     };
 
-    setActive(active);
+    advance(0);
 
     const degreesFromPixels = (pixels) => (-pixels / dragPixelsPerStep) * stepDegrees * spin;
 
@@ -126,7 +139,7 @@ const initHub = (hub) => {
         // Only a drag that actually moved the ring replaces the click that follows it.
         if (steps !== 0) {
             suppressClick = true;
-            setActive(active + steps);
+            advance(steps);
         }
     };
 
@@ -143,7 +156,7 @@ const initHub = (hub) => {
             suppressClick = false;
             return;
         }
-        setActive(cards.indexOf(card), { focus: true });
+        advance(deltaToward(cards.indexOf(card)), { focus: true });
     });
 
     ring.addEventListener('keydown', (event) => {
@@ -152,15 +165,15 @@ const initHub = (hub) => {
 
         if (event.key === forwards) {
             event.preventDefault();
-            setActive(active + 1, { focus: true });
+            advance(1, { focus: true });
         } else if (event.key === backwards) {
             event.preventDefault();
-            setActive(active - 1, { focus: true });
+            advance(-1, { focus: true });
         }
     });
 
-    previous?.addEventListener('click', () => setActive(active - 1, { focus: true }));
-    next?.addEventListener('click', () => setActive(active + 1, { focus: true }));
+    previous?.addEventListener('click', () => advance(-1, { focus: true }));
+    next?.addEventListener('click', () => advance(1, { focus: true }));
 };
 
 document.querySelectorAll('[data-skill-hub]').forEach(initHub);

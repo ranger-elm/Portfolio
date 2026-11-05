@@ -860,7 +860,7 @@
 
   /* Skill hub. Without JS it is a plain grid of cards with every panel listed,
      so all content is reachable. With JS the cards become a 3D ring whose
-     rotation is derived from --hub-active (index) and --hub-drag (pointer). */
+     rotation is derived from --hub-active (unwrapped steps) and --hub-drag. */
 
   .hub-ring {
     --hub-step: calc(360deg / var(--hub-count, 1));
