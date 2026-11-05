@@ -368,6 +368,22 @@ class ContactFormTest extends TestCase
             $this->persianDigits($minimum),
             Lang::get('contact.messageHint', ['min' => $minimum], 'fa')
         );
+
+        // The link cap names its own number, and a Persian page may not carry an
+        // ASCII digit: the English copy takes it from the replacement, the
+        // Persian one is written in Persian figures and checked against config.
+        $links = (string) config('portfolio.form.max_links');
+
+        $this->assertStringContainsString($links, Lang::get('contact.tooManyLinks', ['max' => $links], 'en'));
+        $this->assertStringContainsString(
+            $this->persianDigits($links),
+            Lang::get('contact.tooManyLinks', ['max' => $links], 'fa')
+        );
+        $this->assertStringNotContainsString(
+            $links,
+            Lang::get('contact.tooManyLinks', ['max' => $links], 'fa'),
+            'The Persian answer carries the Latin digits the validator replaced.'
+        );
     }
 
     public function test_the_form_adds_no_new_destination_to_the_page(): void
