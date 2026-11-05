@@ -549,39 +549,57 @@
     }
   }
 
-  /* Closing call to action: the hero's registration ticks, spent once, and the
-     only panel on the site with no border of its own. */
+  /* Closing call to action: the only panel on the site with no border of its
+     own, so it carries weight from depth instead. The sentence and its button
+     sit at opposite ends, which turns the empty right half into the gap the
+     action is pulled against. */
   .frame {
+    --frame-mark: 0%;
     position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: clamp(1.4rem, 0.9rem + 2.4vw, 3.2rem);
     border-radius: var(--radius-frame);
-    background: var(--color-elevated);
-    padding: clamp(1.6rem, 1.15rem + 2.2vw, 2.85rem);
+    padding: clamp(1.8rem, 1.3rem + 2.4vw, 3.1rem) clamp(1.6rem, 1.1rem + 2.4vw, 2.9rem);
+    background:
+      radial-gradient(62% 130% at var(--frame-mark) 0%,
+        color-mix(in oklab, var(--color-brand) 14%, transparent), transparent 66%),
+      var(--color-elevated);
+    box-shadow: 0 1.6rem 2.8rem -1.6rem color-mix(in oklab, var(--color-night) 88%, transparent),
+      inset 0 1px 0 color-mix(in oklab, var(--color-ink) 5%, transparent);
   }
 
+  /* The wash leans toward whichever corner the marks open from, so the panel
+     mirrors as one gesture rather than as flipped content. */
+  [dir='rtl'] .frame {
+    --frame-mark: 100%;
+  }
+
+  /* Crop marks, held clear of the corner so they read as registration and not
+     as a border that failed to close. */
   .frame::before,
   .frame::after {
     content: '';
     position: absolute;
-    inline-size: 1.1rem;
-    block-size: 1.1rem;
-    /* `border-block-start: 2px solid` below resolves to this via currentColor. */
-    color: color-mix(in oklab, var(--color-brand) 68%, var(--color-line));
+    inline-size: 1.35rem;
+    block-size: 1.35rem;
+    color: color-mix(in oklab, var(--color-brand) 62%, var(--color-line));
   }
 
   .frame::before {
-    inset-block-start: -1px;
-    inset-inline-start: -1px;
-    border-block-start: 2px solid;
-    border-inline-start: 2px solid;
-    border-start-start-radius: var(--radius-frame);
+    inset-block-start: -0.55rem;
+    inset-inline-start: -0.55rem;
+    border-block-start: 1.5px solid;
+    border-inline-start: 1.5px solid;
   }
 
   .frame::after {
-    inset-block-end: -1px;
-    inset-inline-end: -1px;
-    border-block-end: 2px solid;
-    border-inline-end: 2px solid;
-    border-end-end-radius: var(--radius-frame);
+    inset-block-end: -0.55rem;
+    inset-inline-end: -0.55rem;
+    border-block-end: 1.5px solid;
+    border-inline-end: 1.5px solid;
   }
 
   /* ── Hero artwork ─────────────────────────────────────────────────────────

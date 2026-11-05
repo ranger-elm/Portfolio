@@ -91,9 +91,9 @@
 
     <x-section label-id="contact-cta" :title="__('home.contactHeading')">
         <div class="frame">
-            <p class="t-lede text-muted">{{ __('home.contactSupportingText') }}</p>
+            <p class="t-sub text-ink">{{ __('home.contactSupportingText') }}</p>
 
-            <a href="{{ route('contact', ['locale' => $locale]) }}" class="btn btn--primary mt-8">
+            <a href="{{ route('contact', ['locale' => $locale]) }}" class="btn btn--primary">
                 {{ __('contact.letsConnect') }}
             </a>
         </div>

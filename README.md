@@ -47,7 +47,7 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 38.70 kB | 8.65 kB |
+| `app-*.css` | 39.40 kB | 8.77 kB |
 | `app-*.js` | 3.74 kB | 1.55 kB |
 | HTML per page | 9.3 – 30.0 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
