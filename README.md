@@ -199,15 +199,16 @@ Content waiting on confirmed facts (nothing here is filled in with guesses):
   `contact.channels` in each lang file, so the Persian page reads گیت‌هاب / لینکدین /
   اینستاگرام / تلگرام rather than four Latin brand names on an otherwise translated page;
   a channel added to config without both label entries fails. `contact.email` is the only
-  channel still null — the address exists in local git config and publishing it is the
-  owner's spam tradeoff to make, not ours. `/contact` now offers a form instead, which reaches
-  that same mailbox without printing it.
+  channel still null: the owner approved that mailbox as the message *recipient*, not as printed
+  text, and `/contact` reaches it through the form without ever rendering it.
+
+Approved on 2026-11-05: `CONTACT_TO` and `MAIL_FROM_ADDRESS` hold the owner's mailbox in the
+local `.env`, which is git-ignored. The address is deliberately not repeated here or in any
+tracked source — a committed README is public and harvestable, and keeping the recipient out of
+the rendered page is what stops a crawler from reading it off the site.
 
 Waiting on the owner's approval, all of them introduced by the contact form:
 
-- `CONTACT_TO` and `MAIL_FROM_ADDRESS` in the local `.env` are set to `elia89.mohammadi@gmail.com`,
-  which is what this machine's `git config user.email` says. It was read from the environment,
-  never confirmed in words, and it is the address every message is addressed to.
 - Delivery has only been observed through the `log` transport on this machine. There are no SMTP
   credentials here, so *a message arrives in an inbox* is still untested — the tests and the
   browser checks prove what would have been sent, not that a provider accepted it.

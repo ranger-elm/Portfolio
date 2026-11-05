@@ -77,9 +77,9 @@ class DestinationGuardTest extends TestCase
 
     public function test_the_email_channel_stays_closed_until_it_is_approved(): void
     {
-        // The address exists only in local git config, so it is the one channel
-        // with no approval yet: neither a mailto: nor the address itself may
-        // reach a rendered page.
+        // The owner approved this mailbox as the recipient of every message, which
+        // is a different thing from publishing it: neither a mailto: nor the
+        // address itself may reach a rendered page, where a crawler reads it.
         $this->assertNull(config('portfolio.contact.email'));
 
         foreach (['/en', '/fa', '/en/contact', '/fa/contact'] as $path) {
