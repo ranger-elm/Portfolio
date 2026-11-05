@@ -43,12 +43,12 @@ php artisan route:list                             # 6 named routes × 2 locales
 - `app/Http/Middleware/SetLocale.php` — locale comes from the URL prefix and is applied
   globally, which is what lets an unmatched path render a Persian 404.
 
-## Measured budget (2026-11-04, `npm run build`)
+## Measured budget (2026-11-05, `npm run build`)
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 35.95 kB | 8.12 kB |
-| `app-*.js` | 2.90 kB | 1.26 kB |
+| `app-*.css` | 38.67 kB | 8.65 kB |
+| `app-*.js` | 3.68 kB | 1.51 kB |
 | HTML per page | 9.3 – 30.0 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
 | Fonts, Persian | 2 files, 45.2 + 33.7 kB | both preloaded |

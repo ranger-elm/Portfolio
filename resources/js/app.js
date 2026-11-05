@@ -1,4 +1,5 @@
 import './skill-hub';
+import './hero-tilt';
 
 const toggle = document.getElementById('nav-toggle');
 const nav = document.getElementById('primary-navigation');

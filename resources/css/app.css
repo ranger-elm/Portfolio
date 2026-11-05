@@ -585,15 +585,17 @@
   }
 
   /* ── Hero artwork ─────────────────────────────────────────────────────────
-     An isometric stack of translucent planes, lit with the two brand accents,
-     framed by hairline grid and coordinate details. */
+     Three planes stacked in isometric space: they slide in as one rig, float
+     out of phase, and lean toward the pointer. --hero-pad aligns the notes. */
 
   .hero-stage {
+    --hero-pad: 6%;
     position: relative;
     aspect-ratio: 1;
     overflow: clip;
     isolation: isolate;
     perspective: 1100px;
+    perspective-origin: 50% 44%;
   }
 
   .hero-stage::before {
@@ -601,127 +603,211 @@
     position: absolute;
     inset: 0;
     background:
-      radial-gradient(42% 42% at 30% 26%, color-mix(in oklab, var(--color-brand) 30%, transparent), transparent 72%),
-      radial-gradient(38% 38% at 72% 74%, color-mix(in oklab, var(--color-accent) 18%, transparent), transparent 74%);
+      radial-gradient(36% 36% at 44% 36%, color-mix(in oklab, var(--color-brand) 20%, transparent), transparent 74%),
+      radial-gradient(30% 30% at 68% 68%, color-mix(in oklab, var(--color-accent) 11%, transparent), transparent 76%);
   }
 
   .hero-grid {
     position: absolute;
     inset: 0;
     background-image:
-      repeating-linear-gradient(to right, color-mix(in oklab, var(--color-line) 66%, transparent) 0 1px, transparent 1px 26px),
-      repeating-linear-gradient(to bottom, color-mix(in oklab, var(--color-line) 66%, transparent) 0 1px, transparent 1px 26px);
-    mask-image: radial-gradient(58% 58% at 50% 50%, #000 18%, transparent 76%);
+      repeating-linear-gradient(to right, color-mix(in oklab, var(--color-line) 48%, transparent) 0 1px, transparent 1px 24px),
+      repeating-linear-gradient(to bottom, color-mix(in oklab, var(--color-line) 48%, transparent) 0 1px, transparent 1px 24px);
+    mask-image: radial-gradient(52% 52% at 50% 46%, #000 14%, transparent 76%);
   }
 
+  /* The rig holds the pointer lean, the orbit the idle drift; -38deg keeps the
+     rotated footprint inside the stage at every angle. */
   .hero-rig {
     position: absolute;
-    inset: 15%;
+    inset: 18%;
     transform-style: preserve-3d;
-    transform: rotateX(56deg) rotateZ(-32deg);
-    animation: hero-drift 22s ease-in-out infinite alternate;
+    transform: rotateX(calc(56deg + var(--hero-tilt-x, 0deg))) rotateZ(calc(-38deg + var(--hero-tilt-z, 0deg)));
+    transition: transform 0.6s var(--ease-soft);
   }
 
+  .hero-orbit {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    animation: hero-orbit 26s ease-in-out infinite alternate;
+  }
+
+  .hero-layer {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+    animation: hero-assemble 0.8s var(--ease-soft) both;
+  }
+
+  .hero-layer:nth-child(2) {
+    animation-delay: 0.1s;
+  }
+
+  .hero-layer:nth-child(3) {
+    animation-delay: 0.2s;
+  }
+
+  /* Rest depth lives in `translate`, bobbing in `transform`: the two compose
+     instead of replacing each other. */
   .hero-plate {
     position: absolute;
     inset: 0;
-    border: 1px solid color-mix(in oklab, var(--color-brand) 24%, var(--color-line));
-    border-radius: 1.1rem;
-    background: linear-gradient(
-      150deg,
-      color-mix(in oklab, var(--color-brand) 13%, transparent),
-      color-mix(in oklab, var(--color-surface) 78%, transparent) 55%,
-      transparent
-    );
+    border: 1px solid color-mix(in oklab, var(--color-line) 78%, transparent);
+    border-radius: var(--radius-frame);
+    translate: 0 0 var(--plate-z, 0rem);
+    transform-style: preserve-3d;
+    background:
+      linear-gradient(152deg, color-mix(in oklab, var(--color-brand) 9%, transparent), transparent 56%),
+      color-mix(in oklab, var(--color-surface) 40%, transparent);
+    box-shadow:
+      0 1.1rem 1.8rem -0.8rem color-mix(in oklab, var(--color-night) 72%, transparent),
+      inset 0 1px 0 color-mix(in oklab, var(--color-ink) 6%, transparent);
+    animation: hero-float var(--plate-dur, 11s) ease-in-out var(--plate-phase, 0s) infinite alternate;
   }
 
   .hero-plate--mid {
+    --plate-z: 2.4rem;
+    --plate-float: 0.6rem;
+    --plate-dur: 9s;
+    --plate-phase: -2.4s;
     inset: 7%;
-    transform: translateZ(2.4rem);
-    border-color: color-mix(in oklab, var(--color-accent) 22%, var(--color-line));
-    background: linear-gradient(150deg, color-mix(in oklab, var(--color-accent) 10%, transparent), transparent 62%);
+    border-color: color-mix(in oklab, var(--color-accent) 18%, var(--color-line));
   }
 
   .hero-plate--top {
-    inset: 15%;
-    transform: translateZ(4.6rem);
-    border-color: color-mix(in oklab, var(--color-brand) 34%, var(--color-line));
-    background: linear-gradient(150deg, color-mix(in oklab, var(--color-elevated) 92%, transparent), transparent 68%);
+    --plate-z: 4.6rem;
+    --plate-float: 0.85rem;
+    --plate-dur: 7.4s;
+    --plate-phase: -1.1s;
+    inset: 14%;
+    border-color: color-mix(in oklab, var(--color-brand) 32%, var(--color-line));
+    background:
+      linear-gradient(152deg, color-mix(in oklab, var(--color-brand) 12%, transparent), transparent 52%),
+      color-mix(in oklab, var(--color-elevated) 94%, transparent);
+    box-shadow:
+      0 1.3rem 2rem -0.9rem color-mix(in oklab, var(--color-night) 78%, transparent),
+      inset 0 1px 0 color-mix(in oklab, var(--color-ink) 9%, transparent);
   }
 
+  /* The top plane carries the code: body rows on one layer, keywords on the other. */
+  .hero-plate--top::before,
   .hero-plate--top::after {
     content: '';
     position: absolute;
-    inset: 22% 18%;
-    background-image: repeating-linear-gradient(
-      to bottom,
-      color-mix(in oklab, var(--color-line) 90%, transparent) 0 1px,
-      transparent 1px 9px
-    );
-    opacity: 0.85;
+    inset-block: 20% 24%;
+    inset-inline: 17%;
+    background-repeat: no-repeat;
+  }
+
+  .hero-plate--top::before {
+    color: color-mix(in oklab, var(--color-accent) 58%, transparent);
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor);
+    background-size: 21% 2px, 16% 2px;
+    background-position: 0 18%, 0 72%;
+  }
+
+  .hero-plate--top::after {
+    color: color-mix(in oklab, var(--color-line) 95%, transparent);
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(currentColor, currentColor);
+    background-size: 46% 2px, 52% 2px, 34% 2px, 58% 2px, 40% 2px, 26% 2px;
+    background-position:
+      0 0,
+      24% 18%,
+      13% 36%,
+      13% 54%,
+      19% 72%,
+      0 90%;
+  }
+
+  .hero-plate--mid::after {
+    content: '';
+    position: absolute;
+    inset: 12%;
+    border: 1px solid color-mix(in oklab, var(--color-line) 55%, transparent);
+    border-radius: calc(var(--radius-frame) - 0.35rem);
   }
 
   .hero-code,
-  .hero-token {
-    position: absolute;
+  .hero-meta {
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    line-height: 1.5;
     letter-spacing: 0;
   }
 
   .hero-code {
-    inset-inline-start: 2%;
-    bottom: 8%;
-    max-inline-size: 92%;
+    position: absolute;
+    inset-block-end: var(--hero-pad);
+    inset-inline-start: var(--hero-pad);
+    max-inline-size: 84%;
     overflow-wrap: anywhere;
     border: 1px solid var(--color-line);
-    border-radius: 0.55rem;
-    background: color-mix(in oklab, var(--color-surface) 94%, transparent);
+    border-radius: var(--radius-control);
+    background: color-mix(in oklab, var(--color-surface) 95%, transparent);
+    box-shadow: 0 0.8rem 1.5rem -0.7rem color-mix(in oklab, var(--color-night) 80%, transparent);
     padding: 0.5rem 0.65rem;
+    font-size: 0.68rem;
+    line-height: 1.55;
     color: var(--color-muted);
+    animation: hero-rise 0.6s var(--ease-soft) 0.34s both;
   }
 
-  .hero-token {
-    inset-inline-end: 3%;
-    top: 12%;
-    border-radius: 999px;
-    border: 1px solid color-mix(in oklab, var(--color-brand) 30%, var(--color-line));
-    background: color-mix(in oklab, var(--color-elevated) 88%, transparent);
-    padding: 0.2rem 0.55rem;
+  .hero-line {
+    display: block;
+  }
+
+  .hero-line--prompt {
+    color: var(--color-ink);
+  }
+
+  .hero-line--prompt::before {
+    content: '❯';
+    margin-inline-end: 0.4rem;
     color: var(--color-brand-soft);
+  }
+
+  .hero-caret {
+    display: inline-block;
+    inline-size: 0.38rem;
+    block-size: 0.8em;
+    margin-inline-start: 0.25rem;
+    background: color-mix(in oklab, var(--color-accent) 88%, transparent);
+    translate: 0 0.1em;
+    animation: hero-caret 1.1s linear infinite;
   }
 
   .hero-meta {
     position: absolute;
-    inset-inline-end: 4%;
-    bottom: 5%;
-    font-family: var(--font-mono);
+    inset-block-end: var(--hero-pad);
+    inset-inline-end: var(--hero-pad);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.6rem;
-    letter-spacing: 0.08em;
-    color: color-mix(in oklab, var(--color-muted) 70%, transparent);
+    letter-spacing: 0.06em;
+    color: color-mix(in oklab, var(--color-muted) 72%, transparent);
+    animation: hero-rise 0.6s var(--ease-soft) 0.42s both;
   }
 
-  .hero-tick {
-    position: absolute;
-    width: 0.7rem;
-    height: 0.7rem;
-    /* The `1px solid` shorthands below resolve to this via currentColor. */
-    color: color-mix(in oklab, var(--color-line) 95%, transparent);
+  .hero-meta::before {
+    content: '';
+    inline-size: 1.5rem;
+    block-size: 1px;
+    background: color-mix(in oklab, var(--color-line) 90%, transparent);
   }
 
-  .hero-tick--start-top {
-    inset-inline-start: 3%;
-    top: 4%;
-    border-top: 1px solid;
-    border-inline-start: 1px solid;
-  }
-
-  .hero-tick--end-bottom {
-    inset-inline-end: 3%;
-    bottom: 4%;
-    border-bottom: 1px solid;
-    border-inline-end: 1px solid;
+  /* The 17rem stage has no room for a second note beside the code chip. */
+  @media (max-width: 40rem) {
+    .hero-meta {
+      display: none;
+    }
   }
 
   .hero-syntax-key {
@@ -928,12 +1014,38 @@
   }
 }
 
-@keyframes hero-drift {
+@keyframes hero-orbit {
   from {
-    transform: rotateX(56deg) rotateZ(-32deg);
+    transform: none;
   }
   to {
-    transform: rotateX(50deg) rotateZ(-25deg) translateZ(1.1rem);
+    transform: rotateX(-5deg) rotateZ(7deg) translateZ(1.1rem);
+  }
+}
+
+@keyframes hero-assemble {
+  from {
+    transform: translate3d(0, 2rem, -3.4rem);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes hero-float {
+  to {
+    transform: translateZ(var(--plate-float, 0.5rem));
+  }
+}
+
+@keyframes hero-caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0.15;
   }
 }
 
@@ -961,6 +1073,15 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hero-rig {
+    transition: none;
+  }
+
+  .hero-orbit,
+  .hero-layer,
+  .hero-plate,
+  .hero-caret,
+  .hero-code,
+  .hero-meta {
     animation: none;
   }
 
