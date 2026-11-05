@@ -5,13 +5,30 @@ const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 // A trail is only worth drawing where there is a pointer to trail and a
 // person who did not ask for less motion.
 if (layer && fine.matches && !reduce.matches) {
-    let x = 0;
-    let y = 0;
+    // The pointer holds the target; the two drawn positions chase it with
+    // different time constants. That gap is the effect — the core is the hand,
+    // the field is the room it moves through.
+    let tx = 0;
+    let ty = 0;
+    let ax = 0;
+    let ay = 0;
+    let cx = 0;
+    let cy = 0;
     let box = null;
     let rect = null;
     let frame = 0;
+    let since = 0;
+    let rest = 0;
+    let lit = false;
+    let seeded = false;
 
-    const paint = () => {
+    const settle = () => {
+        rest = 0;
+        lit = false;
+        layer.classList.remove('cursor-glow--on');
+    };
+
+    const step = (now) => {
         frame = 0;
 
         // Read before writing: the ring is placed against a box whose position
@@ -21,22 +38,67 @@ if (layer && fine.matches && !reduce.matches) {
             rect = box.getBoundingClientRect();
         }
 
-        layer.classList.add('cursor-glow--on');
-        layer.style.setProperty('--mx', `${x}px`);
-        layer.style.setProperty('--my', `${y}px`);
+        // Clamped, because the first frame after a pause carries the whole
+        // pause as elapsed time and would snap both layers to the pointer.
+        const dt = Math.min((now - since) / 1000, 0.05);
+        since = now;
+
+        // 1 - e^(-dt / tau) rather than a fixed factor, so 0.16s means 0.16s on
+        // a 60, 120 or 144 Hz display instead of twice the lag on the slow one.
+        const ka = 1 - Math.exp(-dt / 0.16);
+        const kc = 1 - Math.exp(-dt / 0.045);
+
+        ax += (tx - ax) * ka;
+        ay += (ty - ay) * ka;
+        cx += (tx - cx) * kc;
+        cy += (ty - cy) * kc;
+
+        layer.style.setProperty('--ax', `${ax.toFixed(1)}px`);
+        layer.style.setProperty('--ay', `${ay.toFixed(1)}px`);
+        layer.style.setProperty('--cx', `${cx.toFixed(1)}px`);
+        layer.style.setProperty('--cy', `${cy.toFixed(1)}px`);
 
         if (box) {
-            box.style.setProperty('--gx', `${(x - rect.left).toFixed(1)}px`);
-            box.style.setProperty('--gy', `${(y - rect.top).toFixed(1)}px`);
+            // The ring and the light inside the glass answer the eased core, not
+            // the raw pointer, so the box agrees with the field it sits in.
+            box.style.setProperty('--gx', `${(cx - rect.left).toFixed(1)}px`);
+            box.style.setProperty('--gy', `${(cy - rect.top).toFixed(1)}px`);
+        }
+
+        if (Math.abs(tx - ax) + Math.abs(ty - ay) + Math.abs(tx - cx) + Math.abs(ty - cy) > 0.4) {
+            frame = requestAnimationFrame(step);
+        } else {
+            // Both layers have arrived, so nothing is left to draw until the
+            // next move. The field dims once the hand has stayed off it.
+            rest = setTimeout(settle, 2600);
         }
     };
 
     const queue = (event) => {
-        x = event.clientX;
-        y = event.clientY;
+        tx = event.clientX;
+        ty = event.clientY;
+
+        if (!seeded) {
+            // The first position is also the starting position, or the field
+            // would fly in from the top-left corner of the document.
+            seeded = true;
+            ax = cx = tx;
+            ay = cy = ty;
+            since = event.timeStamp;
+        }
+
+        if (rest) {
+            clearTimeout(rest);
+            rest = 0;
+        }
+
+        if (!lit) {
+            lit = true;
+            layer.classList.add('cursor-glow--on');
+        }
 
         if (!frame) {
-            frame = requestAnimationFrame(paint);
+            frame = requestAnimationFrame(step);
         }
     };
 
@@ -65,5 +127,13 @@ if (layer && fine.matches && !reduce.matches) {
 
     window.addEventListener('scroll', drop, { passive: true, capture: true });
     window.addEventListener('resize', drop);
-    document.addEventListener('pointerleave', () => layer.classList.remove('cursor-glow--on'));
+
+    document.addEventListener('pointerleave', () => {
+        if (rest) {
+            clearTimeout(rest);
+            rest = 0;
+        }
+
+        settle();
+    });
 }

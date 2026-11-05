@@ -1363,6 +1363,13 @@
      the field only ever moves with a transform and the ring only ever
      repaints inside the box under the pointer.
 
+     The field is two layers rather than one disc: a wide ambient wash that
+     trails with a visible lag and a tight core that answers almost at once.
+     The distance between the two is what reads as depth — a single circle can
+     only ever be either sluggish or glued to the cursor, and neither looks
+     like light. Sizes use min() against the viewport so a narrow window never
+     gets a field wider than the page it is lighting.
+
      A pointer position is a physical fact, not a reading direction, so these
      coordinates stay physical on purpose. */
 
@@ -1371,22 +1378,55 @@
     top: 0;
     left: 0;
     z-index: -1;
-    inline-size: 42rem;
-    block-size: 42rem;
-    border-radius: 50%;
-    background: radial-gradient(closest-side,
-      color-mix(in oklab, var(--color-brand) 13%, transparent),
-      color-mix(in oklab, var(--color-accent) 4%, transparent) 46%,
-      transparent 71%);
-    opacity: 0;
+    inline-size: 0;
+    block-size: 0;
     pointer-events: none;
-    transform: translate3d(calc(var(--mx, 0px) - 21rem), calc(var(--my, 0px) - 21rem), 0);
-    transition: opacity 0.5s var(--ease-soft);
-    will-change: transform;
+    opacity: 0;
+    /* The fade to rest is the long half of the pair. A light that vanishes the
+       moment the hand stops reads as switched off; one that drains away reads
+       as settled, and leaves the text it was covering readable again. */
+    transition: opacity 0.75s var(--ease-soft);
   }
 
   .cursor-glow--on {
     opacity: 1;
+    transition-duration: 0.24s;
+  }
+
+  .cursor-glow::before,
+  .cursor-glow::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    /* Static centring, so the per-frame write is the transform alone. */
+    translate: -50% -50%;
+    will-change: transform;
+  }
+
+  .cursor-glow::before {
+    inline-size: min(44rem, 86vw);
+    block-size: min(44rem, 86vw);
+    background: radial-gradient(closest-side,
+      color-mix(in oklab, var(--color-brand) 11%, transparent),
+      color-mix(in oklab, var(--color-accent) 3.5%, transparent) 48%,
+      transparent 72%);
+    transform: translate3d(var(--ax, 0px), var(--ay, 0px), 0);
+  }
+
+  .cursor-glow::after {
+    inline-size: min(12rem, 32vw);
+    block-size: min(12rem, 32vw);
+    background: radial-gradient(closest-side,
+      color-mix(in oklab, var(--color-brand) 8%, transparent),
+      color-mix(in oklab, var(--color-accent) 3%, transparent) 55%,
+      transparent 76%);
+    /* The core accumulates instead of covering: where it overlaps the ambient
+       wash the two lights add up the way overlapping beams do, rather than the
+       nearer one greying the further one out. */
+    mix-blend-mode: plus-lighter;
+    transform: translate3d(var(--cx, 0px), var(--cy, 0px), 0);
   }
 
   /* .glow assumes the box is already positioned, which every box that uses it

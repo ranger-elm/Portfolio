@@ -45,15 +45,27 @@ php artisan route:list                             # 6 named routes × 2 locales
   to `(hover: hover)`), and one shared `.nav-rule` element is placed by JS under the current
   link so it can travel; each link keeps its own `::after` rule as the no-JS marking.
 - `resources/js/cursor-glow.js` + `.cursor-glow` / `.glow` in `resources/css/app.css` —
-  the pointer field. One fixed radial disc follows the cursor behind all content (`z-index: -1`
-  inside the stacking context `body { isolation: isolate }` creates), and any box carrying
-  `.glow` lights a 1px masked ring whose centre is the cursor, using `--gx`/`--gy` written on
-  that box. The ring is a `@media (hover: hover)` rule; the disc is a JS module that only runs
-  when `(hover: hover) and (pointer: fine)` matches and `prefers-reduced-motion` is off. Both
-  are also `display: none` under `forced-colors`, so a touch or high-contrast load gets neither.
+  the pointer field. One fixed `0×0` anchor behind all content (`z-index: -1` inside the
+  stacking context `body { isolation: isolate }` creates) carries two radial layers, `::before`
+  as the room-sized ambient field and `::after` as the tight core, and the JS chases a single
+  pointer target with two different time constants (`tau` 0.16 s and 0.045 s, as
+  `1 - e^(-dt/tau)` so the lag is the same on any refresh rate). The gap that opens between them
+  while the cursor moves is the effect; a hard 1:1 follow reads as a decal, not as light. The
+  core layer is `mix-blend-mode: plus-lighter`, so the two fields add up where they overlap
+  instead of the top one hiding the bottom. Both positions are written as `--ax/--ay` and
+  `--cx/--cy` and read by a `transform`; `translate: -50% -50%` stays static in the rule so only
+  the transform is touched per frame. The first move also seeds both layers at the pointer, or
+  the field would fly in from the document's top-left corner. Once the layers arrive the loop
+  parks itself and, after 2.6 s without input, the field fades out (0.24 s in, 0.75 s out) rather
+  than sitting over text indefinitely. Any box carrying `.glow` lights a 1px masked ring whose
+  centre is the cursor, using `--gx`/`--gy` written on that box — and those are fed the *eased
+  core*, not the raw pointer, so the box and the field it sits in agree. The ring is a
+  `@media (hover: hover)` rule; the field is a JS module that only runs when
+  `(hover: hover) and (pointer: fine)` matches and `prefers-reduced-motion` is off. Both are also
+  `display: none` under `forced-colors`, so a touch or high-contrast load gets neither.
 - `── Glass ──` in `resources/css/app.css` — `.project-card`, `.panel`, `.nav-preview`, `.frame`
   and `.hero-code` hold a translucent two-stop fill instead of a solid one and sit over a fixed
-  `backdrop-filter: blur(14px) saturate(1.3)`, so the cursor disc is literally what the box is
+  `backdrop-filter: blur(14px) saturate(1.3)`, so the cursor field is literally what the box is
   made of. Two of the three pointer reactions are registered custom properties (`@property
   --sheen`, `@property --ring`), which is what lets a radial highlight inside the glass and the
   ring's radius interpolate; the blur number itself never animates, because animating
@@ -69,8 +81,8 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 48.74 kB | 10.24 kB |
-| `app-*.js` | 5.85 kB | 2.20 kB |
+| `app-*.css` | 51.19 kB | 10.56 kB |
+| `app-*.js` | 6.36 kB | 2.41 kB |
 | HTML per page | 11.4 – 31.8 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
 | Fonts, Persian | 2 files, 46.5 + 36.4 kB | both preloaded |
@@ -78,23 +90,32 @@ php artisan route:list                             # 6 named routes × 2 locales
 Subresource requests on a page load: 4 (stylesheet, script, two fonts on `/fa`, one on `/en`).
 No CDN, no analytics, no external origin.
 
-Pointer field cost, sampled over 120 `pointermove` frames at 1280×800: median 16.7 ms, p95
-16.9 ms, max 17.5 ms, 0 frames over 20 ms. Each frame writes four custom properties — two on
-the disc, which a `transform` reads, and two on the box under the cursor. Box geometry is read
-only when the pointer changes box, the page scrolls, or the window resizes.
+Pointer field cost, sampled while the field was fully lit and both layers were still moving:
+240 `pointermove` frames, median 16.7 ms, p95 16.9 ms, max 17.0 ms, 0 frames over 20 ms on a
+60 Hz panel. Each frame writes six custom properties — four transforms for the two layers and
+two ring coordinates for the box under the cursor — and reads box geometry only when the pointer
+changes box, the page scrolls, or the window resizes. Scrolling with the field lit and a
+`.project-card`'s blur active costs exactly the same: 57 frames, median 16.7 ms, p95 16.8 ms,
+max 17.0 ms, 0 over 20 ms. The `backdrop-filter` is not the expensive part, because it is a
+fixed value and the backdrop it samples is repainted by the scroll itself rather than by a
+transition.
 
-With the glass panes lit (a pointer parked inside a `.project-card`, `--sheen` interpolating on
-every frame): 119 `pointermove` frames, median 16.7 ms, p95 17.3 ms, max 18.7 ms, 0 frames over
-20 ms. The `backdrop-filter` costs nothing measurable while scrolling — 83 scroll frames at a
-median of 16.7 ms both with the blur active and with it forced to `none` — because the blur is a
-fixed value and the backdrop it samples is repainted by the scroll itself, not by a transition.
+The trail, measured on a 1100 px pointer jump: the distance between the core and the ambient
+field opens to 532 px about 50 ms in, then closes to 43 px by 500 ms. No CSS transition is
+involved, so the lag is a property of the two easing constants and comes out the same at 60,
+120 or 144 Hz.
 
-Contrast in the lit states, probed at the worst-case pixel — the cursor disc's centre and the
-pane's own sheen landing on the same spot, which is the darkest the glass ever gets under the
-brightest light: body ink 12.60:1, muted 7.46:1, brand-violet link text 5.58:1 on a
-`.project-card`, and 5.20:1 for the same violet at the corner of a `.frame`. Every pair stays
-above the WCAG AA floor of 4.5:1; the violet link text in a fully lit pane is below AAA and is
-the cost of the glass, so it is the number to raise if the sheen is ever made stronger.
+Contrast, probed from screenshots of the composited page instead of from the token values,
+because the field, the glass and the blur all land on the same pixel. Over the bare canvas the
+field lifts the background from `#0b0d12` to `#231d3e` at its centre — a luminance gain of
+0.0118 — and the worst text pairs there are ink 13.23:1, muted 7.84:1, brand-violet 5.86:1
+against 16.13 / 9.56 / 7.14 with the field switched off. Inside a fully lit pane — the pointer
+parked at the centre of a `.project-card`, `--sheen` interpolated up to 13%, the ring open and
+the field blurred through the frost — the brightest pane fill is `#231e41` and the same three
+pairs are 13.07:1, 7.74:1, 5.79:1. The field's own share of that last figure is 6.18:1 → 5.79:1;
+the rest of the loss is the glass, which is the trade the panes were approved for. Every pair
+stays above the WCAG AA floor of 4.5:1, and the violet link text in a fully lit pane is the
+number to raise if the sheen or the field is ever made stronger.
 
 Accessibility floors verified in the browser: 16 distinct text/background pairs, all passing
 WCAG AA (lowest 4.59:1); `:focus-visible` = 2px solid brand violet with 2px offset; the brand
