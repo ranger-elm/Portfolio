@@ -739,6 +739,13 @@
       linear-gradient(color-mix(in oklab, var(--color-surface) 58%, transparent),
         color-mix(in oklab, var(--color-night) 74%, transparent));
     padding: 1.5rem 1.55rem 1.6rem;
+
+    /* 42rem is the card's own measure, not a preference: 58ch of lede (624px)
+       plus the two 1.55rem side paddings. A lone card is the only case where
+       auto-fit hands one track the whole column, and an outlined pane that is
+       two-thirds empty announces the gap. The 100% keeps this inert the moment
+       a second project exists, because two tracks are already 464px. */
+    max-inline-size: min(100%, 42rem);
     box-shadow: 0 0.9rem 1.6rem -1rem color-mix(in oklab, var(--color-night) 78%, transparent);
     transition:
       border-color 0.25s var(--ease-soft),

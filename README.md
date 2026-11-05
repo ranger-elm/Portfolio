@@ -93,7 +93,7 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 54.20 kB | 11.00 kB |
+| `app-*.css` | 54.19 kB | 11.00 kB |
 | `app-*.js` | 6.36 kB | 2.39 kB |
 | HTML per page | 13.7 – 34.6 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
@@ -135,8 +135,9 @@ mark, nav links, language switcher, menu toggle, links and buttons all reach 44p
 widths while desktop keeps its 40px scale (the inline project-title link stays text-sized and
 is paired with a 44px button); no horizontal overflow from 320px to 1440px in either direction
 on any page, `/projects` included — below ~340px of content the card grid's 20rem floor yields
-to the container width (`minmax(min(20rem,100%),1fr)`), which `tests/Feature/LayoutGuardTest.php`
-pins so a bare floor cannot come back; `prefers-reduced-motion` collapses animation and
+to the container width (`minmax(min(20rem,100%),1fr)`) and a lone card's 42rem ceiling yields to
+the same container (`min(100%, 42rem)`), which `tests/Feature/LayoutGuardTest.php`
+pins so neither bare value can come back; `prefers-reduced-motion` collapses animation and
 transition durations globally.
 
 ## Deployment
@@ -240,6 +241,14 @@ Known layout behaviour, deliberate:
 - Card grids repeat with `auto-fit`, so their track floor is the only thing keeping a card
   inside the viewport. Every grid in the site therefore bounds its floor to the container
   (`min(20rem,100%)` or `0`), and `/projects` is measured clean at 320px in both directions.
+- A single card is the one case where `auto-fit` hands a whole 952px column to one track, so
+  `.project-card` caps itself to `min(100%, 42rem)` — 42rem is the card's own measure (a 58ch
+  lede plus its side padding), not a preference. The pane ends where its text does; the void
+  moves outside the border, start-aligned with the section lede above it. With a second
+  project the cap is inert, since two tracks are already 464px each.
+- At 320px in English the status pill wraps under the project name (63 + 16 + 138 = 217px in a
+  213px row); in Persian it stays beside it. Both are the `flex-wrap` doing its job, and
+  neither spills.
 
 Housekeeping:
 

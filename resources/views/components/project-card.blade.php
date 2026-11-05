@@ -7,7 +7,10 @@
 @endphp
 
 <article class="project-card glow">
-    <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+    {{-- The status belongs to the name, not to the far edge of the pane: at
+         justify-between the two sat 699px apart on a wide screen and the label
+         read as a column header rather than as this project's state. --}}
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
         <h3 class="t-sub">
             <a href="{{ $detailUrl }}" class="text-ink no-underline transition-colors hover:text-brand-soft">
                 <bdi>{{ $project['name'] }}</bdi>

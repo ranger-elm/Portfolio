@@ -13,6 +13,10 @@ use Tests\TestCase;
  * column, and the extra 55px opened a horizontal scroll on `/projects` at a 320px
  * viewport. The floor has to be `min(20rem,100%)` — the container's own width is
  * the one value a track can never exceed.
+ *
+ * The other half of the same problem is the ceiling: one card in an `auto-fit`
+ * grid is handed the whole column, so the pane is capped to its own text measure
+ * and its status label kept next to the name instead of pinned to the far edge.
  */
 class LayoutGuardTest extends TestCase
 {
@@ -80,6 +84,47 @@ class LayoutGuardTest extends TestCase
         $this->assertSame(array_fill(0, count(config('content.projects')), 'project-card glow'), $cards);
     }
 
+    public function test_the_card_pane_is_capped_to_its_own_measure(): void
+    {
+        $rule = $this->ruleBody(File::get(resource_path('css/app.css')), '.project-card');
+
+        $this->assertNotNull($rule, 'the .project-card rule has left the stylesheet.');
+
+        // 42rem is not a taste call: it is the 58ch lede the card already caps
+        // itself to, plus the card's own side padding. The 100% has to stay —
+        // a bare 42rem is wider than the 265px track at a 320px viewport, which
+        // is the same spill the grid floor was fixed for.
+        $this->assertMatchesRegularExpression(
+            '/max-inline-size:\s*min\(\s*100%\s*,\s*42rem\s*\)/',
+            $rule,
+            'a lone card takes the whole column and leaves an outlined pane two thirds empty.'
+        );
+    }
+
+    public function test_the_status_label_stays_with_the_project_name(): void
+    {
+        foreach (['en', 'fa'] as $locale) {
+            $header = $this->cardHeader("/$locale/projects");
+            $class = $header->getAttribute('class');
+
+            // justify-between is what put 699px between a name and its own state
+            // on a wide column, where the label reads as a column header.
+            $this->assertStringNotContainsString('justify-between', $class);
+            $this->assertStringContainsString('items-center', $class);
+
+            // The two classes above guard nothing if the label has left the row.
+            $children = [];
+
+            foreach ($header->childNodes as $child) {
+                if ($child instanceof \DOMElement) {
+                    $children[] = $child->nodeName;
+                }
+            }
+
+            $this->assertSame(['h3', 'span'], $children, "the $locale card header no longer holds the name and its status.");
+        }
+    }
+
     /**
      * @return array<int, string> Each `repeat(auto-fit|auto-fill …)` whose minmax()
      *                            floor is a fixed length rather than a container share.
@@ -116,6 +161,42 @@ class LayoutGuardTest extends TestCase
         $this->assertNotNull($grid, "the {$path} page has no card grid at all.");
 
         return $grid;
+    }
+
+    private function cardHeader(string $path): \DOMElement
+    {
+        $document = $this->document($this->get($path)->assertOk()->getContent());
+        $header = (new DOMXPath($document))
+            ->query("//article[contains(concat(' ',normalize-space(@class),' '),' project-card ')][1]/div[1]")
+            ->item(0);
+
+        $this->assertNotNull($header, "the {$path} page has no card header.");
+
+        return $header;
+    }
+
+    /**
+     * The declarations of one stylesheet rule, braces counted rather than
+     * guessed, so a guard cannot pass against a selector that no longer exists.
+     */
+    private function ruleBody(string $source, string $selector): ?string
+    {
+        if (! preg_match('/'.preg_quote($selector, '/').'\s*\{/', $source, $match, PREG_OFFSET_CAPTURE)) {
+            return null;
+        }
+
+        $offset = $match[0][1] + strlen($match[0][0]);
+        $depth = 1;
+
+        for ($length = strlen($source); $offset < $length; $offset++) {
+            if ($source[$offset] === '{') {
+                $depth++;
+            } elseif ($source[$offset] === '}' && --$depth === 0) {
+                return substr($source, $match[0][1], $offset - $match[0][1] + 1);
+            }
+        }
+
+        return null;
     }
 
     /**
