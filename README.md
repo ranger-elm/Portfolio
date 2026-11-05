@@ -177,10 +177,16 @@ usual cause of a release that appears not to have taken effect.
 
 Content waiting on confirmed facts (nothing here is filled in with guesses):
 
-- `config/portfolio.php` `contact.*` (email, GitHub, LinkedIn) are empty, so those links
-  render on no page; the contact page shows nothing until they are supplied.
-- `config/content.php` has one project (Planino) with `repository: null`, `demo: null`, and
-  no year or role, and all six §6.2 case-study sections are empty.
+- `contact.github` is approved and renders in the site footer with `rel="me"`. `contact.email`
+  and `contact.linkedin` stay null: no LinkedIn exists, and the only address on record sits in
+  local git config, so publishing it is the owner's spam tradeoff to make, not ours.
+- Planino links `https://github.com/ranger-elm/Planino_v1` — the repository holding the newest
+  code, despite the older-sounding name — and has no `demo`, because nothing is deployed. Four
+  case-study sections (§6.2) are written from the owner's own answers plus the repository;
+  `challenges` and `lessons` are deliberately absent, and the renderer drops a heading whose
+  body is missing, so the page never shows an empty block.
+- The stack says MySQL because that is what the working `.env` of the current repository runs;
+  its shipped `.env.example` says sqlite. Worth confirming which one the portfolio should claim.
 - The four added About paragraphs and the skills heading wording need approval.
 - No `og:image` exists, so social previews are text-only. Adding one needs an approved
   visual asset — a raster card cannot be produced from the identity without a decision.
