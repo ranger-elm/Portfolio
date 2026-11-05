@@ -34,4 +34,18 @@ return [
         'linkedin' => null,
     ],
 
+    // The order the project detail page walks its case study in, per §6.2. The
+    // parity test reads this same list, so a section can never be added to the
+    // page without a heading in both locales.
+    'project_sections' => [
+        'problem',
+        'goals',
+        'role',
+        'decisions',
+        'focus',
+        'features',
+        'challenges',
+        'lessons',
+    ],
+
 ];

@@ -14,7 +14,7 @@
         // A section renders only when this locale actually supplies copy, so no
         // heading ever sits above an empty block.
         $sections = [];
-        foreach (['problem', 'goals', 'role', 'decisions', 'focus', 'features', 'challenges', 'lessons'] as $key) {
+        foreach (config('portfolio.project_sections') as $key) {
             $langKey = "projects.items.$slug.$key";
             if (Lang::has($langKey)) {
                 $sections[] = ['label' => __("projects.detail.$key"), 'body' => __($langKey)];

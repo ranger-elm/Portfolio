@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use DOMDocument;
 use DOMXPath;
+use Illuminate\Support\Facades\Lang;
 use Tests\TestCase;
 
 class InternalPagesTest extends TestCase
@@ -108,6 +109,30 @@ class InternalPagesTest extends TestCase
             foreach ($absent as $label) {
                 $response->assertDontSee($label, false);
             }
+        }
+    }
+
+    public function test_every_case_study_section_has_a_heading_in_both_locales(): void
+    {
+        foreach (config('portfolio.project_sections') as $key) {
+            foreach (['en', 'fa'] as $locale) {
+                $heading = Lang::get("projects.detail.$key", [], $locale);
+
+                $this->assertNotSame(
+                    "projects.detail.$key",
+                    $heading,
+                    "The detail page walks [$key], so projects.detail.$key must exist in $locale."
+                );
+                $this->assertNotSame('', trim($heading), "[$key] has an empty heading in $locale.");
+            }
+
+            // A Persian heading copied from English is the other failure this
+            // guards: the page would render, just in the wrong language.
+            $this->assertNotSame(
+                Lang::get("projects.detail.$key", [], 'en'),
+                Lang::get("projects.detail.$key", [], 'fa'),
+                "[$key] carries the same heading in both locales."
+            );
         }
     }
 
