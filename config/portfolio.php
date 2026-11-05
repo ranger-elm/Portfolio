@@ -51,6 +51,27 @@ return [
         'telegram' => 'https://t.me/RangerELM',
     ],
 
+    // The message form. `recipient` is deliberately read from the environment and
+    // never rendered: the address reaches the inbox without appearing anywhere a
+    // scraper can collect it, which is the one advantage a form has over a
+    // mailto: link. With it unset the form is not built at all, so the site has a
+    // working path or none rather than a button that quietly goes nowhere.
+    'form' => [
+        'recipient' => env('CONTACT_TO'),
+        // A real visitor has to read four labels and type four fields; a naive
+        // bot posts the moment it can. Under this many seconds the session never
+        // opened the form or was not read, and the submission is dropped.
+        'min_read_seconds' => 5,
+        // Per source address, per hour. A shared office NAT is the worst case
+        // this number has to survive, so it is deliberately not one.
+        'max_per_hour' => 3,
+        // Links are what spam is selling, so a message carrying more than this
+        // many is refused outright instead of reaching the inbox.
+        'max_links' => 2,
+        'min_message_length' => 20,
+        'max_message_length' => 3000,
+    ],
+
     // The order the project detail page walks its case study in, per §6.2. The
     // parity test reads this same list, so a section can never be added to the
     // page without a heading in both locales.

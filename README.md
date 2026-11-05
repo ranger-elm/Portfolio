@@ -12,6 +12,7 @@ requests. Persian is a first-class direction, not a mirrored stylesheet.
 | Frontend | Blade anonymous components, Vite 7, Tailwind CSS 4 (CSS-first `@theme` tokens) |
 | Typography | Self-hosted WOFF2: Space Grotesk (Latin), Estedad arabic+latin subsets (Persian, variable `wght 100–900`); system mono for micro labels |
 | Data | `config/content.php` + `lang/{en,fa}/*.php` — `DB_CONNECTION=none`, no migrations |
+| Mail | One text/plain `Mailable` to one address from `CONTACT_TO`; no storage, no queue |
 | Tests | PHPUnit feature tests that parse the rendered HTML with DOMXPath |
 
 ## Local development
@@ -76,14 +77,25 @@ php artisan route:list                             # 6 named routes × 2 locales
   the sheen are both turned off.
 - `app/Http/Middleware/SetLocale.php` — locale comes from the URL prefix and is applied
   globally, which is what lets an unmatched path render a Persian 404.
+- `app/Http/Controllers/ContactController.php` — the form and the four guards that answer to it,
+  in the order they run: a filled invisible field (`company_website`, clipped to 1px,
+  `aria-hidden="true"`, `tabindex="-1"`) gets the same success a person gets, so nothing about
+  the trap is confirmed back; `RateLimiter` spends three submissions per source address per hour;
+  the time since the page was opened is read from the session and never from the form, so the
+  reading time cannot be faked by editing the markup; and the validator caps links at two,
+  because links are what spam sells. The recipient comes only from `CONTACT_TO` and is never
+  taken from the request, which is what keeps this from being an open mail relay, and names and
+  subjects are flattened onto one line before they reach a header. `resources/views/mail/contact.blade.php`
+  is text/plain with no HTML part, so a mail client has nothing to render. Unsetting `CONTACT_TO`
+  removes the form and answers the POST with a 404 rather than leaving a button that goes nowhere.
 
 ## Measured budget (2026-11-05, `npm run build`)
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 51.19 kB | 10.56 kB |
-| `app-*.js` | 6.36 kB | 2.41 kB |
-| HTML per page | 11.4 – 31.8 kB | — |
+| `app-*.css` | 53.87 kB | 10.94 kB |
+| `app-*.js` | 6.36 kB | 2.39 kB |
+| HTML per page | 13.7 – 34.6 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
 | Fonts, Persian | 2 files, 46.5 + 36.4 kB | both preloaded |
 
@@ -152,8 +164,11 @@ Environment values that must change before a release:
 | --- | --- | --- |
 | `APP_ENV` | `production` | enables production error handling |
 | `APP_DEBUG` | `false` | `true` renders stack traces and configuration to visitors |
-| `APP_URL` | the public origin | `canonical`, `og:url` and `hreflang` are generated from it |
+| `APP_URL` | the public origin | `canonical`, `og:url` and `hreflang` are generated from it, and the mail footer names it |
 | `APP_KEY` | from `key:generate` | session/cookie encryption |
+| `CONTACT_TO` | the owner's mailbox | unset, the contact form is not drawn and `POST /{locale}/contact` answers 404 |
+| `MAIL_MAILER` | an SMTP transport | `log` never delivers, and it writes every message body into `storage/logs` |
+| `MAIL_FROM_ADDRESS` | a mailbox on the sending host | a `From` the recipient's provider cannot verify lands in spam |
 
 There are no migrations — never run `php artisan migrate` here; the connection is `none`.
 
@@ -184,7 +199,25 @@ Content waiting on confirmed facts (nothing here is filled in with guesses):
   اینستاگرام / تلگرام rather than four Latin brand names on an otherwise translated page;
   a channel added to config without both label entries fails. `contact.email` is the only
   channel still null — the address exists in local git config and publishing it is the
-  owner's spam tradeoff to make, not ours.
+  owner's spam tradeoff to make, not ours. `/contact` now offers a form instead, which reaches
+  that same mailbox without printing it.
+
+Waiting on the owner's approval, all of them introduced by the contact form:
+
+- `CONTACT_TO` and `MAIL_FROM_ADDRESS` in the local `.env` are set to `elia89.mohammadi@gmail.com`,
+  which is what this machine's `git config user.email` says. It was read from the environment,
+  never confirmed in words, and it is the address every message is addressed to.
+- Delivery has only been observed through the `log` transport on this machine. There are no SMTP
+  credentials here, so *a message arrives in an inbox* is still untested — the tests and the
+  browser checks prove what would have been sent, not that a provider accepted it.
+- `--color-alert: #f0717a` is a new token. The approved design pass had no error colour, and a
+  rejected field needs one that is not the brand violet.
+- The hourly limit is keyed on the source address, so one visitor behind a shared NAT — a
+  university network, a café — shares three submissions with everyone else on it. Raising
+  `form.max_per_hour` trades spam pressure against that.
+- `SESSION_DRIVER=file` means the reading-time guard lives in a session file per visitor, which is
+  the same mechanism the CSRF token already used; no new store was added, but a host that wipes
+  `storage/framework/sessions` between deploys resets it.
 - Of the four, only Telegram could be verified from this machine: `t.me/RangerELM` answers
   with a non-empty bio where a made-up handle answers with an empty one. LinkedIn returns
   `999` to every client and Instagram login-walls every probe including `/embed/`, so a typo

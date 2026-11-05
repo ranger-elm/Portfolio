@@ -15,6 +15,12 @@
   --color-muted: #aeb6c8;
   --color-line: #283044;
 
+  /* Rejected input needs a colour of its own, and none of the five approved
+     tokens reads as a problem: violet is the brand, sky is the accent. This one
+     is the only addition the palette has needed so far, and it carries text, so
+     it is checked against the night background rather than picked by eye. */
+  --color-alert: #f0717a;
+
   --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-fa: 'Estedad', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
@@ -354,6 +360,121 @@
     block-size: auto;
     inline-size: 2px;
     border-radius: 2px;
+  }
+
+  /* ── Forms ────────────────────────────────────────────────────────────────
+     A field is glass like everything else on the page, so its fill keeps part
+     of the night and lets the cursor field behind it through. State is carried
+     by the border and by the words under the field, never by colour alone, and
+     the 2.75rem height is the same finger-sized scale the nav uses. */
+
+  .form-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 42rem) {
+    .form-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .field--wide {
+      grid-column: 1 / -1;
+    }
+  }
+
+  .field {
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+
+  .field-label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-muted);
+    transition: color 0.2s var(--ease-soft);
+  }
+
+  [dir='rtl'] .field-label {
+    font-size: 0.86rem;
+  }
+
+  .field:focus-within .field-label {
+    color: var(--color-ink);
+  }
+
+  .input,
+  .textarea {
+    inline-size: 100%;
+    min-block-size: 2.75rem;
+    padding-block: 0.55rem;
+    padding-inline: 0.85rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    background: color-mix(in oklab, var(--color-night) 55%, transparent);
+    color: var(--color-ink);
+    font-size: 0.95rem;
+    caret-color: var(--color-brand-soft);
+    transition: border-color 0.2s var(--ease-soft), background-color 0.2s var(--ease-soft);
+  }
+
+  .input:hover,
+  .textarea:hover {
+    border-color: color-mix(in oklab, var(--color-brand) 32%, var(--color-line));
+  }
+
+  .input:focus,
+  .textarea:focus {
+    background: color-mix(in oklab, var(--color-night) 38%, transparent);
+    border-color: color-mix(in oklab, var(--color-brand) 65%, var(--color-line));
+  }
+
+  .textarea {
+    min-block-size: 9.5rem;
+    line-height: 1.6;
+    resize: vertical;
+  }
+
+  [dir='rtl'] .textarea {
+    line-height: 1.9;
+  }
+
+  /* A rejected value is marked by its own message as well as by the border, so
+     the state survives someone who cannot see the difference between two hues. */
+  .input[aria-invalid='true'],
+  .textarea[aria-invalid='true'] {
+    border-color: color-mix(in oklab, var(--color-alert) 70%, var(--color-line));
+  }
+
+  .field-problem {
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--color-alert);
+  }
+
+  [dir='rtl'] .field-problem {
+    font-size: 0.83rem;
+    line-height: 1.95;
+  }
+
+  .form-outcome {
+    padding: 0.9rem 1.05rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-control);
+    background: color-mix(in oklab, var(--color-elevated) 60%, transparent);
+  }
+
+  .form-outcome--ok {
+    border-color: color-mix(in oklab, var(--color-accent) 45%, var(--color-line));
+  }
+
+  .form-outcome--bad {
+    border-color: color-mix(in oklab, var(--color-alert) 50%, var(--color-line));
+  }
+
+  .form-outcome--bad li {
+    color: var(--color-alert);
   }
 
   /* ── Navigation bar ───────────────────────────────────────────────────────

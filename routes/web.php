@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContactController;
 use Illuminate\Support\Facades\Route;
 
 Route::pattern('locale', implode('|', array_keys(config('portfolio.locales'))));
@@ -15,4 +16,5 @@ Route::get('{locale}/projects/{slug}', function (string $locale, string $slug) {
 })->name('project');
 Route::get('{locale}/lab', fn () => view('pages.lab'))->name('lab');
 Route::get('{locale}/about', fn () => view('pages.about'))->name('about');
-Route::get('{locale}/contact', fn () => view('pages.contact'))->name('contact');
+Route::get('{locale}/contact', [ContactController::class, 'show'])->name('contact');
+Route::post('{locale}/contact', [ContactController::class, 'store'])->name('contact.send');
