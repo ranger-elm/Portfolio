@@ -19,18 +19,51 @@
             <span class="brand-tag"><span dir="ltr">{{ config('portfolio.tagline') }}</span></span>
         </a>
 
-        <nav aria-label="{{ __('common.mainNavigation') }}" class="hidden md:block">
-            <ul class="flex items-center gap-1">
+        <nav aria-label="{{ __('common.mainNavigation') }}" class="nav-bar hidden md:block" data-nav-bar>
+            <ul role="list" class="nav-list">
                 @foreach ($links as $name => $label)
-                    <li>
+                    <li class="nav-item"@if ($name === 'projects') data-nav-group @endif>
                         <a href="{{ route($name, ['locale' => $locale]) }}"
                            @if ($activeName === $name) aria-current="page" @endif
-                           class="nav-link">
+                           class="nav-link"
+                           data-nav-link>
                             {{ $label }}
                         </a>
+
+                        @if ($name === 'projects')
+                            <div class="nav-preview" role="group" aria-label="{{ __('projects.featuredProjects') }}">
+                                <p class="t-label text-muted">{{ __('projects.featuredProjects') }}</p>
+
+                                <ul role="list" class="nav-preview-list">
+                                    @foreach (config('content.projects') as $slug => $project)
+                                        <li>
+                                            <a href="{{ route('project', ['locale' => $locale, 'slug' => $slug]) }}" class="nav-preview-item">
+                                                <span class="nav-preview-head">
+                                                    <bdi class="nav-preview-name">{{ $project['name'] }}</bdi>
+
+                                                    <x-status-label :status="__('status.' . $project['status'])" />
+                                                </span>
+
+                                                <span class="nav-preview-tags">
+                                                    @foreach (__("projects.items.$slug.focus") as $focus)
+                                                        <span class="chip">{{ $focus }}</span>
+                                                    @endforeach
+                                                </span>
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                </ul>
+
+                                <a href="{{ route('projects', ['locale' => $locale]) }}" class="nav-preview-all">
+                                    {{ __('projects.allProjects') }}
+                                </a>
+                            </div>
+                        @endif
                     </li>
                 @endforeach
             </ul>
+
+            <span class="nav-rule" data-nav-rule aria-hidden="true"></span>
         </nav>
 
         <div class="flex items-center gap-2">

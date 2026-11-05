@@ -40,6 +40,10 @@ php artisan route:list                             # 6 named routes × 2 locales
   `section-body`) every section is built from.
 - `resources/views/components/skill-hub.blade.php` + `resources/js/app.js` — the ring;
   ARIA tab semantics are added by JS only, so no-JS markup stays valid.
+- `resources/views/components/site-header.blade.php` + `resources/js/nav-underline.js` —
+  the desktop bar. The Projects preview is a CSS disclosure (`:hover`/`:focus-within`, gated
+  to `(hover: hover)`), and one shared `.nav-rule` element is placed by JS under the current
+  link so it can travel; each link keeps its own `::after` rule as the no-JS marking.
 - `app/Http/Middleware/SetLocale.php` — locale comes from the URL prefix and is applied
   globally, which is what lets an unmatched path render a Persian 404.
 
@@ -47,9 +51,9 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 39.19 kB | 8.66 kB |
-| `app-*.js` | 3.74 kB | 1.55 kB |
-| HTML per page | 9.7 – 29.9 kB | — |
+| `app-*.css` | 41.75 kB | 9.17 kB |
+| `app-*.js` | 4.87 kB | 1.95 kB |
+| HTML per page | 11.4 – 31.7 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
 | Fonts, Persian | 2 files, 46.5 + 36.4 kB | both preloaded |
 
