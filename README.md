@@ -10,7 +10,7 @@ requests. Persian is a first-class direction, not a mirrored stylesheet.
 | --- | --- |
 | Runtime | PHP `^8.2` (developed on 8.5.6), Laravel `^12.0` |
 | Frontend | Blade anonymous components, Vite 7, Tailwind CSS 4 (CSS-first `@theme` tokens) |
-| Typography | Self-hosted WOFF2: Space Grotesk (Latin), Vazirmatn arabic+latin subsets (Persian); system mono for micro labels |
+| Typography | Self-hosted WOFF2: Space Grotesk (Latin), Estedad arabic+latin subsets (Persian, variable `wght 100–900`); system mono for micro labels |
 | Data | `config/content.php` + `lang/{en,fa}/*.php` — `DB_CONNECTION=none`, no migrations |
 | Tests | PHPUnit feature tests that parse the rendered HTML with DOMXPath |
 
@@ -47,11 +47,11 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 39.64 kB | 8.83 kB |
+| `app-*.css` | 39.19 kB | 8.66 kB |
 | `app-*.js` | 3.74 kB | 1.55 kB |
-| HTML per page | 9.6 – 29.9 kB | — |
+| HTML per page | 9.7 – 29.9 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
-| Fonts, Persian | 2 files, 45.2 + 33.7 kB | both preloaded |
+| Fonts, Persian | 2 files, 46.5 + 36.4 kB | both preloaded |
 
 Subresource requests on a page load: 4 (stylesheet, script, two fonts on `/fa`, one on `/en`).
 No CDN, no analytics, no external origin.

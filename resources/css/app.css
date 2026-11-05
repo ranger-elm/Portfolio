@@ -16,7 +16,7 @@
   --color-line: #283044;
 
   --font-sans: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
-  --font-fa: 'Vazirmatn', ui-sans-serif, system-ui, sans-serif;
+  --font-fa: 'Estedad', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
 
   --radius-card: 0.7rem;
@@ -66,11 +66,13 @@
 
 @layer components {
   /* ── Type ─────────────────────────────────────────────────────────────────
-     One scale, two optometries. Persian is not mirrored English: Vazirmatn
-     needs a smaller display size because the approved copy runs longer, zero
-     letter spacing because tracking unjoins cursive letters, and more leading
-     for its cascading descenders. Labels also drop the Latin mono face, which
-     carries no Arabic glyphs at all. */
+     One scale, two optometries. Persian is not mirrored English: Estedad runs
+     about 15% wider per em than the Latin faces at the same size, so the copy
+     breaks earlier and needs no help from letter spacing — tracking would
+     unjoin cursive letters anyway. Its x-height is 0.490 em against Space
+     Grotesk's 0.486, which is why the Persian sizes sit close to the Latin
+     ones rather than being shrunk to fit the longer strings. Labels also drop
+     the Latin mono face, which carries no Arabic glyphs at all. */
 
   .t-display {
     font-size: clamp(2.3rem, 1.35rem + 3.9vw, 4rem);
@@ -108,31 +110,31 @@
   }
 
   [dir='rtl'] .t-display {
-    font-size: clamp(1.75rem, 1.05rem + 2.9vw, 2.9rem);
-    line-height: 1.52;
+    font-size: clamp(1.9rem, 1.1rem + 3.1vw, 3.1rem);
+    line-height: 1.5;
     letter-spacing: 0;
   }
 
   [dir='rtl'] .t-title {
-    font-size: clamp(1.2rem, 1.02rem + 0.72vw, 1.6rem);
-    line-height: 1.6;
+    font-size: clamp(1.28rem, 1.08rem + 0.78vw, 1.7rem);
+    line-height: 1.58;
     letter-spacing: 0;
   }
 
   [dir='rtl'] .t-sub {
-    font-size: 1.06rem;
-    line-height: 1.62;
+    font-size: 1.12rem;
+    line-height: 1.6;
     letter-spacing: 0;
   }
 
   [dir='rtl'] .t-lede {
-    font-size: 1.02rem;
-    line-height: 2.02;
+    font-size: 1.06rem;
+    line-height: 1.94;
   }
 
   [dir='rtl'] .t-label {
     font-family: var(--font-fa);
-    font-size: 0.8rem;
+    font-size: 0.84rem;
     line-height: 1.9;
     letter-spacing: 0;
     text-transform: none;
@@ -657,8 +659,8 @@
   }
 
   [dir='rtl'] .footer-note {
-    font-size: 0.92rem;
-    line-height: 2;
+    font-size: 0.95rem;
+    line-height: 1.95;
   }
 
   /* ── Hero artwork ─────────────────────────────────────────────────────────

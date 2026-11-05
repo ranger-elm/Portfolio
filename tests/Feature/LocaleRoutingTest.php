@@ -39,6 +39,7 @@ class LocaleRoutingTest extends TestCase
 
         $this->assertStringNotContainsString('fonts.googleapis.com', $html);
         $this->assertStringNotContainsString('fonts.bunny.net', $html);
-        $this->assertStringContainsString('/fonts/vazirmatn-arabic-var.woff2', $html);
+        $this->assertStringContainsString('/fonts/estedad-arabic-var.woff2', $html);
+        $this->assertStringContainsString('/fonts/estedad-latin-var.woff2', $html);
     }
 }

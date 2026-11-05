@@ -37,8 +37,8 @@
     @endforeach
 
     @if (app()->getLocale() === 'fa')
-        <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/vazirmatn-arabic-var.woff2">
-        <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/vazirmatn-latin-var.woff2">
+        <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/estedad-arabic-var.woff2">
+        <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/estedad-latin-var.woff2">
     @else
         <link rel="preload" as="font" type="font/woff2" crossorigin href="/fonts/space-grotesk-latin-var.woff2">
     @endif
