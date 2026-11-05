@@ -602,6 +602,65 @@
     border-inline-end: 1.5px solid;
   }
 
+  /* ── Footer ──────────────────────────────────────────────────────────────
+     Centred rather than top-aligned, because the nav links are 40px control
+     boxes and the brand line is a 27px text box: a shared top would leave the
+     nav reading as a stray line under the wordmark instead of a second column.
+     The legal pair stays on one line at the reading start in either direction,
+     and only the Latin run inside it is isolated. */
+
+  .footer {
+    border-block-start: 1px solid var(--color-line);
+    background: var(--color-surface);
+  }
+
+  .footer-inner,
+  .footer-legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-inline: auto;
+    max-inline-size: 78rem;
+    padding-inline: 1.25rem;
+  }
+
+  .footer-inner {
+    justify-content: space-between;
+    gap: clamp(1.5rem, 1rem + 2.2vw, 3rem) clamp(1.5rem, 1rem + 2.5vw, 3.5rem);
+    padding-block: clamp(2.1rem, 1.5rem + 2.6vw, 3.2rem) clamp(1.5rem, 1.1rem + 1.6vw, 2.3rem);
+  }
+
+  .footer-id {
+    flex: 1 1 17rem;
+    max-inline-size: 26rem;
+  }
+
+  .footer-note {
+    margin-block-start: 0.8rem;
+    font-size: 0.88rem;
+    line-height: 1.72;
+    color: var(--color-muted);
+  }
+
+  .footer-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem clamp(1rem, 0.7rem + 1.1vw, 1.55rem);
+  }
+
+  /* Both statements belong to one sentence about the site, so they stay on the
+     same side of the page. Only the Latin run inside the first one is isolated. */
+  .footer-legal {
+    gap: 0.15rem clamp(0.9rem, 0.6rem + 1vw, 1.4rem);
+    border-block-start: 1px solid var(--color-line);
+    padding-block: clamp(1.15rem, 0.95rem + 0.7vw, 1.6rem);
+  }
+
+  [dir='rtl'] .footer-note {
+    font-size: 0.92rem;
+    line-height: 2;
+  }
+
   /* ── Hero artwork ─────────────────────────────────────────────────────────
      Three planes stacked in isometric space: they slide in as one rig, float
      out of phase, and lean toward the pointer. --hero-pad aligns the notes. */

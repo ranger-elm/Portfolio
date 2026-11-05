@@ -11,19 +11,19 @@
     $linkedin = config('portfolio.contact.linkedin');
 @endphp
 
-<footer class="border-t border-line bg-surface">
-    <div class="mx-auto flex w-full max-w-[78rem] flex-col gap-8 px-5 py-10 sm:flex-row sm:items-start sm:justify-between">
-        <div class="max-w-sm">
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-id">
             <a href="{{ route('home', ['locale' => $locale]) }}" class="brand">
                 <span class="brand-mark">{{ config('portfolio.brand') }}</span>
                 <span class="brand-tag"><span dir="ltr">{{ config('portfolio.tagline') }}</span></span>
             </a>
 
-            <p class="mt-3 text-sm leading-relaxed text-muted">{{ __('home.footerTagline') }}</p>
+            <p class="footer-note">{{ __('home.footerTagline') }}</p>
         </div>
 
-        <nav aria-label="{{ __('common.mainNavigation') }}">
-            <ul role="list" class="flex flex-wrap gap-x-4 gap-y-1">
+        <nav class="footer-group" aria-label="{{ __('common.mainNavigation') }}">
+            <ul role="list" class="footer-list">
                 @foreach ($links as $name => $label)
                     <li>
                         <a href="{{ route($name, ['locale' => $locale]) }}" class="link-quiet">{{ $label }}</a>
@@ -33,10 +33,10 @@
         </nav>
 
         @if ($email || $github || $linkedin)
-            <div>
+            <div class="footer-group">
                 <h2 class="t-label text-muted">{{ __('contact.findMeOnline') }}</h2>
 
-                <ul role="list" class="mt-1 flex flex-wrap gap-x-4 gap-y-1">
+                <ul role="list" class="footer-list mt-1">
                     @if ($email)
                         <li>
                             <a href="mailto:{{ $email }}" class="link-quiet">{{ __('contact.emailMe') }}</a>
@@ -57,10 +57,9 @@
         @endif
     </div>
 
-    <div class="mx-auto w-full max-w-[78rem] border-t border-line px-5 py-5">
-        <p class="text-[0.8rem] leading-relaxed text-muted">
-            <span dir="ltr" class="block">© {{ date('Y') }} {{ config('portfolio.brand') }}</span>
-            <span class="block">{{ __('common.allRightsReserved') }}</span>
-        </p>
+    <div class="footer-legal">
+        <p class="t-hint text-muted"><span dir="ltr">© {{ date('Y') }} {{ config('portfolio.brand') }}</span></p>
+
+        <p class="t-hint text-muted">{{ __('common.allRightsReserved') }}</p>
     </div>
 </footer>
