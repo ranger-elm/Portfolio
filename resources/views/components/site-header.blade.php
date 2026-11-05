@@ -31,7 +31,7 @@
                         </a>
 
                         @if ($name === 'projects')
-                            <div class="nav-preview" role="group" aria-label="{{ __('projects.featuredProjects') }}">
+                            <div class="nav-preview glow" role="group" aria-label="{{ __('projects.featuredProjects') }}">
                                 <p class="t-label text-muted">{{ __('projects.featuredProjects') }}</p>
 
                                 <ul role="list" class="nav-preview-list">

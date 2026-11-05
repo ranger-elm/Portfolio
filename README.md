@@ -44,6 +44,13 @@ php artisan route:list                             # 6 named routes × 2 locales
   the desktop bar. The Projects preview is a CSS disclosure (`:hover`/`:focus-within`, gated
   to `(hover: hover)`), and one shared `.nav-rule` element is placed by JS under the current
   link so it can travel; each link keeps its own `::after` rule as the no-JS marking.
+- `resources/js/cursor-glow.js` + `.cursor-glow` / `.glow` in `resources/css/app.css` —
+  the pointer field. One fixed radial disc follows the cursor behind all content (`z-index: -1`
+  inside the stacking context `body { isolation: isolate }` creates), and any box carrying
+  `.glow` lights a 1px masked ring whose centre is the cursor, using `--gx`/`--gy` written on
+  that box. The ring is a `@media (hover: hover)` rule; the disc is a JS module that only runs
+  when `(hover: hover) and (pointer: fine)` matches and `prefers-reduced-motion` is off. Both
+  are also `display: none` under `forced-colors`, so a touch or high-contrast load gets neither.
 - `app/Http/Middleware/SetLocale.php` — locale comes from the URL prefix and is applied
   globally, which is what lets an unmatched path render a Persian 404.
 
@@ -51,14 +58,19 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 41.75 kB | 9.17 kB |
-| `app-*.js` | 4.87 kB | 1.95 kB |
-| HTML per page | 11.4 – 31.7 kB | — |
+| `app-*.css` | 43.30 kB | 9.49 kB |
+| `app-*.js` | 5.79 kB | 2.18 kB |
+| HTML per page | 11.4 – 31.8 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
 | Fonts, Persian | 2 files, 46.5 + 36.4 kB | both preloaded |
 
 Subresource requests on a page load: 4 (stylesheet, script, two fonts on `/fa`, one on `/en`).
 No CDN, no analytics, no external origin.
+
+Pointer field cost, sampled over 120 `pointermove` frames at 1280×800: median 16.7 ms, p95
+16.9 ms, max 17.5 ms, 0 frames over 20 ms. Each frame writes four custom properties — two on
+the disc, which a `transform` reads, and two on the box under the cursor. Box geometry is read
+only when the pointer changes box, the page scrolls, or the window resizes.
 
 Accessibility floors verified in the browser: 16 distinct text/background pairs, all passing
 WCAG AA (lowest 4.59:1); `:focus-visible` = 2px solid brand violet with 2px offset; the brand

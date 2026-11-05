@@ -6,7 +6,7 @@
     $detailUrl = route('project', ['locale' => app()->getLocale(), 'slug' => $slug]);
 @endphp
 
-<article class="project-card">
+<article class="project-card glow">
     <div class="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <h3 class="t-sub">
             <a href="{{ $detailUrl }}" class="text-ink no-underline transition-colors hover:text-brand-soft">

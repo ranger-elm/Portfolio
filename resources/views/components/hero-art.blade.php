@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <p class="hero-code">
+    <p class="hero-code glow">
         <span dir="ltr" class="hero-line hero-line--prompt">php artisan serve<span class="hero-caret"></span></span>
         <span dir="ltr" class="hero-line">
             <span class="hero-syntax-key">Route</span><span class="hero-syntax-fn">::get</span>(<span class="hero-syntax-string">'/fa/projects'</span>)

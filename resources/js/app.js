@@ -1,6 +1,7 @@
 import './skill-hub';
 import './hero-tilt';
 import './nav-underline';
+import './cursor-glow';
 
 const toggle = document.getElementById('nav-toggle');
 const nav = document.getElementById('primary-navigation');

@@ -38,6 +38,11 @@
   body {
     @apply bg-night text-ink font-normal antialiased;
     font-family: var(--font-body);
+
+    /* The cursor field has to sit behind the content but above this
+       background, and that is only possible if the body owns a stacking
+       context of its own. */
+    isolation: isolate;
   }
 
   :focus-visible {
@@ -1241,6 +1246,65 @@
     font-size: 0.74rem;
     line-height: 1.5;
   }
+
+  /* ── Cursor glow ──────────────────────────────────────────────────────────
+     One light with two jobs: over the page it is a soft field that trails the
+     pointer, and inside a box that opts in with .glow the same light is
+     clipped to that box's own edge, so the border reads as the thing catching
+     it. Both are driven by custom properties a script writes per frame, so
+     the field only ever moves with a transform and the ring only ever
+     repaints inside the box under the pointer.
+
+     A pointer position is a physical fact, not a reading direction, so these
+     coordinates stay physical on purpose. */
+
+  .cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    inline-size: 42rem;
+    block-size: 42rem;
+    border-radius: 50%;
+    background: radial-gradient(closest-side,
+      color-mix(in oklab, var(--color-brand) 13%, transparent),
+      color-mix(in oklab, var(--color-accent) 4%, transparent) 46%,
+      transparent 71%);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate3d(calc(var(--mx, 0px) - 21rem), calc(var(--my, 0px) - 21rem), 0);
+    transition: opacity 0.5s var(--ease-soft);
+    will-change: transform;
+  }
+
+  .cursor-glow--on {
+    opacity: 1;
+  }
+
+  /* .glow assumes the box is already positioned, which every box that uses it
+     is: a card, a skill panel, the hero terminal, the projects preview. */
+  .glow::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: inherit;
+    background: radial-gradient(8rem 8rem at var(--gx, 50%) var(--gy, 50%),
+      color-mix(in oklab, var(--color-brand) 80%, transparent),
+      color-mix(in oklab, var(--color-accent) 26%, transparent) 42%,
+      transparent 68%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--ease-soft);
+  }
+
+  @media (hover: hover) {
+    .glow:is(:hover, :focus-within)::after {
+      opacity: 1;
+    }
+  }
 }
 
 @keyframes hero-orbit {
@@ -1305,6 +1369,13 @@
     transition: none;
   }
 
+  /* Trailing the pointer is the whole motion here, so the light is removed
+     rather than slowed down. */
+  .cursor-glow,
+  .glow::after {
+    display: none;
+  }
+
   .hero-orbit,
   .hero-layer,
   .hero-plate,
@@ -1321,5 +1392,14 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* In a forced-colours mode the system owns every border and background, so a
+   painted light would only fight it. */
+@media (forced-colors: active) {
+  .cursor-glow,
+  .glow::after {
+    display: none;
   }
 }

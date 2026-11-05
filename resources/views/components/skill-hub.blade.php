@@ -37,7 +37,7 @@
                 <article data-skill-panel="panel-{{ $slug }}"
                          id="panel-{{ $slug }}"
                          aria-labelledby="tab-{{ $slug }}"
-                         class="hub-panel panel">
+                         class="hub-panel panel glow">
                     <p class="t-label panel-eyebrow">{{ __('skills.hubLabel') }}</p>
 
                     <h3 class="t-title mt-2 text-ink">

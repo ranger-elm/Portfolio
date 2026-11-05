@@ -52,6 +52,18 @@ class HomepageContentTest extends TestCase
         $this->assertSame(0, $xpath->query('.//a|.//button|.//input|.//*[@tabindex]', $stage->item(0))->length);
     }
 
+    public function test_the_cursor_glow_layer_is_decorative_and_holds_no_focusable_content(): void
+    {
+        foreach (['/en', '/fa/lab'] as $path) {
+            $xpath = new DOMXPath($this->document($this->get($path)->getContent()));
+            $glow = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " cursor-glow ")]');
+
+            $this->assertSame(1, $glow->length, $path);
+            $this->assertSame('true', $glow->item(0)->getAttribute('aria-hidden'), $path);
+            $this->assertSame(0, $xpath->query('.//a|.//button|.//input|.//*[@tabindex]', $glow->item(0))->length, $path);
+        }
+    }
+
     public function test_both_locales_expose_the_same_landed_sections_in_the_same_order(): void
     {
         foreach (['en', 'fa'] as $locale) {
