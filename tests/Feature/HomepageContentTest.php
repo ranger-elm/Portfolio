@@ -22,11 +22,7 @@ class HomepageContentTest extends TestCase
     public function test_no_unconfirmed_destination_is_rendered_as_a_link(): void
     {
         foreach (['/en', '/fa', '/en/contact', '/fa/contact'] as $path) {
-            $html = $this->get($path)->assertOk()->getContent();
-
-            $this->assertStringNotContainsString('mailto:', $html);
-            $this->assertStringNotContainsString('github.com', $html);
-            $this->assertStringNotContainsString('linkedin.com', $html);
+            $this->assertNoUnapprovedDestination($this->get($path)->assertOk()->getContent(), $path);
         }
     }
 
@@ -87,11 +83,20 @@ class HomepageContentTest extends TestCase
 
     public function test_no_internal_link_on_the_homepage_is_broken(): void
     {
+        $localHost = parse_url(config('app.url'), PHP_URL_HOST);
+
         foreach (['en', 'fa'] as $locale) {
             preg_match_all('/href="([^"]+)"/', $this->get('/'.$locale)->getContent(), $matches);
             $checked = 0;
 
             foreach ($matches[1] as $href) {
+                $host = parse_url($href, PHP_URL_HOST);
+
+                // An approved off-site destination is not this router's to check.
+                if ($host !== null && $host !== $localHost) {
+                    continue;
+                }
+
                 $path = parse_url($href, PHP_URL_PATH);
 
                 if ($path === null || ! str_starts_with($path, '/')) {

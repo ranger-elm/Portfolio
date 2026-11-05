@@ -22,8 +22,14 @@ return [
             'name' => 'Planino',
             'status' => 'inDevelopment',
             'featured' => true,
-            'technologies' => ['Laravel', 'PHP', 'MySQL'],
-            'repository' => null,
+            // Read from the composer.json and package.json of the copy that holds
+            // the current work, not from what the portfolio used to claim.
+            'technologies' => ['Laravel', 'PHP', 'Livewire', 'MySQL', 'Tailwind CSS'],
+            // Planino_v1 is the repository the newest code is pushed to (last commit
+            // 2026-10-09, ahead of Planino's 2026-07-27), despite the older-sounding name.
+            'repository' => 'https://github.com/ranger-elm/Planino_v1',
+            // Nothing is deployed: both .env files say APP_URL=http://localhost and the
+            // repo carries no deploy configuration, so there is no demo to link.
             'demo' => null,
         ],
 

@@ -29,8 +29,11 @@ return [
     ],
 
     'contact' => [
+        // Approved on 2026-11-05 from the tables in the URL stage report. The email
+        // stays unset: it exists only in local git config, and putting it on a
+        // public page is a spam tradeoff the owner has not agreed to in words.
         'email' => null,
-        'github' => null,
+        'github' => 'https://github.com/ranger-elm',
         'linkedin' => null,
     ],
 

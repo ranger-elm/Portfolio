@@ -83,33 +83,44 @@ class InternalPagesTest extends TestCase
         $response->assertDontSee('Project Overview', false);
     }
 
-    public function test_sections_without_supplied_copy_render_no_heading(): void
+    /**
+     * The owner supplies case-study copy section by section, so a heading with
+     * no body under it — or a body whose heading never renders — is the failure
+     * mode. Both are derived from the dictionaries instead of a frozen list, so
+     * filling in the next section does not need a test edit.
+     */
+    public function test_the_case_study_renders_exactly_the_sections_that_have_copy(): void
     {
-        foreach (['/en/projects/planino' => [
-            'Problem & motivation',
-            'Goals',
-            'My Role',
-            'Implementation decisions',
-            'Key Features',
-            'Challenges',
-            'Lessons Learned',
-            'Screenshots',
-        ], '/fa/projects/planino' => [
-            'مسئله و انگیزه',
-            'اهداف',
-            'نقش من',
-            'تصمیم‌های پیاده‌سازی',
-            'قابلیت‌های اصلی',
-            'چالش‌ها',
-            'آموخته‌ها',
-            'تصاویر',
-        ]] as $path => $absent) {
-            $response = $this->get($path);
+        $supplied = [];
 
-            foreach ($absent as $label) {
-                $response->assertDontSee($label, false);
+        foreach (['en', 'fa'] as $locale) {
+            $expected = [];
+
+            foreach (config('portfolio.project_sections') as $key) {
+                if (Lang::has("projects.items.planino.$key", $locale)) {
+                    $expected[] = Lang::get("projects.detail.$key", [], $locale);
+                }
             }
+
+            $this->assertNotEmpty($expected, "the $locale case study has no sections at all.");
+
+            $rendered = [];
+
+            foreach ((new DOMXPath($this->document($this->get("/$locale/projects/planino")->getContent())))->query('//article//h2') as $node) {
+                $rendered[] = trim($node->textContent);
+            }
+
+            $this->assertSame($expected, $rendered, "the $locale case study headings do not match its supplied copy.");
+
+            $supplied[$locale] = array_values(array_filter(
+                config('portfolio.project_sections'),
+                fn ($key) => Lang::has("projects.items.planino.$key", $locale)
+            ));
         }
+
+        // A section filled in one language only would put English prose on the
+        // Persian page, so both dictionaries must be at the same point.
+        $this->assertSame($supplied['en'], $supplied['fa']);
     }
 
     public function test_every_case_study_section_has_a_heading_in_both_locales(): void
@@ -178,11 +189,10 @@ class InternalPagesTest extends TestCase
     {
         foreach (self::providerPages() as $name => $template) {
             foreach (['en', 'fa'] as $locale) {
-                $html = $this->get(sprintf($template, $locale))->getContent();
-
-                foreach (['mailto:', 'github.com', 'linkedin.com'] as $forbidden) {
-                    $this->assertStringNotContainsString($forbidden, $html, sprintf('%s leaked into %s (%s)', $forbidden, $name, $locale));
-                }
+                $this->assertNoUnapprovedDestination(
+                    $this->get(sprintf($template, $locale))->getContent(),
+                    sprintf('%s (%s)', $name, $locale)
+                );
             }
         }
     }
@@ -190,6 +200,7 @@ class InternalPagesTest extends TestCase
     public function test_no_internal_link_on_any_internal_page_is_broken(): void
     {
         $checked = 0;
+        $localHost = parse_url(config('app.url'), PHP_URL_HOST);
 
         foreach (self::providerPages() as $name => $template) {
             foreach (['en', 'fa'] as $locale) {
@@ -200,6 +211,11 @@ class InternalPagesTest extends TestCase
                     $href = $attribute->nodeValue;
 
                     if (! str_starts_with($href, 'http') || str_contains($href, '/build/') || str_contains($href, '/fonts/')) {
+                        continue;
+                    }
+
+                    // An approved off-site destination is not this router's to check.
+                    if (parse_url($href, PHP_URL_HOST) !== $localHost) {
                         continue;
                     }
 
