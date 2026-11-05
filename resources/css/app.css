@@ -25,9 +25,28 @@
   --ease-soft: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
+/* Two of the glass numbers are animated, and a custom property only
+   interpolates once the browser knows its type. The ring's initial value is in
+   absolute pixels on purpose: a registered initial value may not depend on any
+   other property, so `rem` — which resolves against the root font size — makes
+   the whole @property rule invalid and the property unregistered. */
+@property --sheen {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
+
+@property --ring {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 120px;
+}
+
 @layer base {
   :root {
     --font-body: var(--font-sans);
+    --glass-blur: 14px;
+    --glass-lift: -0.16rem;
     color-scheme: dark;
   }
 
@@ -401,9 +420,15 @@
     inset-inline-start: -0.7rem;
     inline-size: min(23rem, calc(100vw - 3rem));
     padding: 0.9rem 1rem 1rem;
-    border: 1px solid var(--color-line);
+    border: 1px solid color-mix(in oklab, var(--color-line) 80%, transparent);
     border-radius: var(--radius-card);
-    background: var(--color-surface);
+    /* A menu has to stay readable over live content, so this pane keeps more
+       of its own body than a card does — enough to blur, not enough to swim. */
+    background:
+      radial-gradient(9rem 9rem at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--color-brand) var(--sheen), transparent), transparent 60%),
+      linear-gradient(color-mix(in oklab, var(--color-surface) 84%, transparent),
+        color-mix(in oklab, var(--color-night) 88%, transparent));
     box-shadow: 0 1.4rem 2.6rem -1.3rem color-mix(in oklab, var(--color-night) 88%, transparent);
     visibility: hidden;
     opacity: 0;
@@ -411,6 +436,8 @@
     transition:
       opacity 0.14s var(--ease-soft) 0.1s,
       transform 0.14s var(--ease-soft) 0.1s,
+      --sheen 0.32s var(--ease-soft),
+      --ring 0.32s var(--ease-soft),
       visibility 0s linear 0.24s;
   }
 
@@ -424,6 +451,14 @@
         transform 0.16s var(--ease-soft) 0.08s,
         visibility 0s;
     }
+  }
+
+  /* The preview opens because the pointer is on the link above it, and a light
+     with no pointer inside the panel would be a blob, not a reflection: the
+     sheen waits until the pointer actually crosses into the glass. */
+  .nav-preview:is(:hover, :focus-within) {
+    --sheen: 11%;
+    --ring: 10rem;
   }
 
   .nav-preview-list {
@@ -440,12 +475,18 @@
     border-radius: calc(var(--radius-card) - 0.25rem);
     color: inherit;
     text-decoration: none;
-    transition: background-color 0.18s var(--ease-soft), border-color 0.18s var(--ease-soft);
+    transition:
+      background-color 0.18s var(--ease-soft),
+      border-color 0.18s var(--ease-soft),
+      translate 0.18s var(--ease-soft),
+      box-shadow 0.18s var(--ease-soft);
   }
 
   .nav-preview-item:is(:hover, :focus-visible) {
-    background: color-mix(in oklab, var(--color-elevated) 80%, transparent);
-    border-color: var(--color-line);
+    background: color-mix(in oklab, var(--color-elevated) 72%, transparent);
+    border-color: color-mix(in oklab, var(--color-brand) 32%, var(--color-line));
+    translate: 0 -0.1rem;
+    box-shadow: 0 0.7rem 1.2rem -0.8rem color-mix(in oklab, var(--color-night) 90%, transparent);
   }
 
   .nav-preview-head {
@@ -569,16 +610,31 @@
 
   .project-card {
     position: relative;
-    border: 1px solid var(--color-line);
+    border: 1px solid color-mix(in oklab, var(--color-line) 76%, transparent);
     border-radius: var(--radius-card);
-    background: color-mix(in oklab, var(--color-surface) 90%, transparent);
+    background:
+      radial-gradient(11rem 11rem at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--color-brand) var(--sheen), transparent), transparent 64%),
+      linear-gradient(color-mix(in oklab, var(--color-surface) 58%, transparent),
+        color-mix(in oklab, var(--color-night) 74%, transparent));
     padding: 1.5rem 1.55rem 1.6rem;
-    transition: border-color 0.25s var(--ease-soft);
+    box-shadow: 0 0.9rem 1.6rem -1rem color-mix(in oklab, var(--color-night) 78%, transparent);
+    transition:
+      border-color 0.25s var(--ease-soft),
+      box-shadow 0.25s var(--ease-soft),
+      translate 0.25s var(--ease-soft),
+      --sheen 0.32s var(--ease-soft),
+      --ring 0.32s var(--ease-soft);
   }
 
-  .project-card:hover,
-  .project-card:focus-within {
+  /* Entering the card is one gesture: the pane lifts, the light inside it moves
+     to where the pointer is, the edge ring swells and the spine opens out. */
+  .project-card:is(:hover, :focus-within) {
+    --sheen: 13%;
+    --ring: 11rem;
+    translate: 0 var(--glass-lift);
     border-color: color-mix(in oklab, var(--color-brand) 34%, var(--color-line));
+    box-shadow: 0 1.5rem 2.4rem -1.1rem color-mix(in oklab, var(--color-night) 88%, transparent);
   }
 
   /* The violet spine marks projects as the primary content type, and only
@@ -593,12 +649,12 @@
     border-end-end-radius: 2px;
     background: var(--color-brand);
     opacity: 0;
-    transition: opacity 0.25s var(--ease-soft);
+    transition: opacity 0.25s var(--ease-soft), inset-block 0.25s var(--ease-soft);
   }
 
-  .project-card:hover::before,
-  .project-card:focus-within::before {
-    opacity: 0.85;
+  .project-card:is(:hover, :focus-within)::before {
+    inset-block: 0.55rem;
+    opacity: 1;
   }
 
   /* Status and technologies are data, so they are marked up and ruled as a
@@ -641,11 +697,16 @@
     font-size: 0.72rem;
     color: var(--color-ink);
     text-decoration: none;
-    transition: border-color 0.2s var(--ease-soft);
+    transition:
+      border-color 0.2s var(--ease-soft),
+      background-color 0.2s var(--ease-soft),
+      translate 0.2s var(--ease-soft);
   }
 
-  a.chip:hover {
+  a.chip:is(:hover, :focus-visible) {
     border-color: color-mix(in oklab, var(--color-brand) 55%, var(--color-line));
+    background: color-mix(in oklab, var(--color-brand) 12%, var(--color-night));
+    translate: 0 -0.08rem;
   }
 
   /* Chips hold both Latin technology names and Persian feature words, so the
@@ -723,7 +784,8 @@
     background:
       radial-gradient(62% 130% at var(--frame-mark) 0%,
         color-mix(in oklab, var(--color-brand) 14%, transparent), transparent 66%),
-      var(--color-elevated);
+      linear-gradient(color-mix(in oklab, var(--color-elevated) 62%, transparent),
+        color-mix(in oklab, var(--color-night) 55%, transparent));
     box-shadow: 0 1.6rem 2.8rem -1.6rem color-mix(in oklab, var(--color-night) 88%, transparent),
       inset 0 1px 0 color-mix(in oklab, var(--color-ink) 5%, transparent);
   }
@@ -982,15 +1044,24 @@
     inset-inline-start: var(--hero-pad);
     max-inline-size: 84%;
     overflow-wrap: anywhere;
-    border: 1px solid var(--color-line);
+    border: 1px solid color-mix(in oklab, var(--color-line) 72%, transparent);
     border-radius: var(--radius-control);
-    background: color-mix(in oklab, var(--color-surface) 95%, transparent);
+    background:
+      radial-gradient(7rem 7rem at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--color-brand) var(--sheen), transparent), transparent 62%),
+      color-mix(in oklab, var(--color-surface) 55%, transparent);
     box-shadow: 0 0.8rem 1.5rem -0.7rem color-mix(in oklab, var(--color-night) 80%, transparent);
     padding: 0.5rem 0.65rem;
     font-size: 0.68rem;
     line-height: 1.55;
     color: var(--color-muted);
     animation: hero-rise 0.6s var(--ease-soft) 0.34s both;
+    transition: --sheen 0.32s var(--ease-soft), --ring 0.32s var(--ease-soft);
+  }
+
+  .hero-code:is(:hover, :focus-within) {
+    --sheen: 9%;
+    --ring: 9rem;
   }
 
   .hero-line {
@@ -1201,10 +1272,26 @@
   .panel {
     position: relative;
     overflow: clip;
-    border: 1px solid var(--color-line);
+    border: 1px solid color-mix(in oklab, var(--color-line) 72%, transparent);
     border-radius: var(--radius-card);
-    background: color-mix(in oklab, var(--color-elevated) 94%, transparent);
+    background:
+      radial-gradient(13rem 13rem at var(--gx, 50%) var(--gy, 50%),
+        color-mix(in oklab, var(--color-brand) var(--sheen), transparent), transparent 62%),
+      linear-gradient(color-mix(in oklab, var(--color-elevated) 52%, transparent),
+        color-mix(in oklab, var(--color-night) 66%, transparent));
     padding: 1.4rem 1.5rem;
+    transition:
+      border-color 0.25s var(--ease-soft),
+      --sheen 0.32s var(--ease-soft),
+      --ring 0.32s var(--ease-soft);
+  }
+
+  /* A panel holds reading matter, so it lifts nothing and brightens only the
+     light inside it. */
+  .panel:is(:hover, :focus-within) {
+    --sheen: 10%;
+    --ring: 13rem;
+    border-color: color-mix(in oklab, var(--color-brand) 26%, var(--color-line));
   }
 
   .panel::before {
@@ -1245,6 +1332,27 @@
   [dir='rtl'] .hub-card-tier {
     font-size: 0.74rem;
     line-height: 1.5;
+  }
+
+  /* ── Glass ────────────────────────────────────────────────────────────────
+     The boxes are panes, not plates: each fill keeps only part of its own
+     body and lets the cursor field behind it through, blurred, so the light a
+     pointer carries is genuinely what the box is made of. The blur number is
+     fixed on purpose — animating backdrop-filter re-renders the whole backdrop
+     of the box on every frame — while the two things that do react to the
+     pointer, --sheen (light inside the glass) and --ring (light along its
+     edge), repaint only the box. */
+
+  .project-card,
+  .panel,
+  .nav-preview,
+  .frame,
+  .hero-code {
+    --ring: 7.5rem;
+    /* The prefixed declaration goes first: written after it, the unprefixed one
+       is what survives the build, and Chrome has never accepted the prefix. */
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
+    backdrop-filter: blur(var(--glass-blur)) saturate(1.3);
   }
 
   /* ── Cursor glow ──────────────────────────────────────────────────────────
@@ -1289,9 +1397,9 @@
     inset: 0;
     padding: 1px;
     border-radius: inherit;
-    background: radial-gradient(8rem 8rem at var(--gx, 50%) var(--gy, 50%),
-      color-mix(in oklab, var(--color-brand) 80%, transparent),
-      color-mix(in oklab, var(--color-accent) 26%, transparent) 42%,
+    background: radial-gradient(var(--ring) var(--ring) at var(--gx, 50%) var(--gy, 50%),
+      color-mix(in oklab, var(--color-brand) 82%, transparent),
+      color-mix(in oklab, var(--color-accent) 30%, transparent) 42%,
       transparent 68%);
     -webkit-mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
     mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
@@ -1370,10 +1478,25 @@
   }
 
   /* Trailing the pointer is the whole motion here, so the light is removed
-     rather than slowed down. */
+     rather than slowed down. The panes themselves stay — frost is not motion —
+     but nothing inside them follows the cursor any more. */
   .cursor-glow,
   .glow::after {
     display: none;
+  }
+
+  .project-card:is(:hover, :focus-within),
+  .panel:is(:hover, :focus-within),
+  .hero-code:is(:hover, :focus-within),
+  .nav-preview:is(:hover, :focus-within),
+  .nav-preview-item:is(:hover, :focus-visible),
+  a.chip:is(:hover, :focus-visible) {
+    --sheen: 0%;
+    translate: none;
+  }
+
+  .project-card:is(:hover, :focus-within)::before {
+    inset-block: 1.15rem;
   }
 
   .hero-orbit,
@@ -1396,10 +1519,21 @@
 }
 
 /* In a forced-colours mode the system owns every border and background, so a
-   painted light would only fight it. */
+   painted light would only fight it — and blurring a backdrop the system has
+   already flattened is work with no result. */
 @media (forced-colors: active) {
   .cursor-glow,
   .glow::after {
     display: none;
+  }
+
+  .project-card,
+  .panel,
+  .nav-preview,
+  .frame,
+  .hero-code {
+    --sheen: 0%;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
   }
 }

@@ -50,6 +50,14 @@ if (layer && fine.matches && !reduce.matches) {
         const target = event.target.closest?.('.glow');
 
         if (target !== box) {
+            // Leaving a box clears its coordinates, so a pane lit only by
+            // keyboard focus reflects the middle of itself, not wherever the
+            // pointer happened to be a minute ago.
+            if (box) {
+                box.style.removeProperty('--gx');
+                box.style.removeProperty('--gy');
+            }
+
             box = target;
             drop();
         }

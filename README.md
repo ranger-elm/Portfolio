@@ -51,6 +51,17 @@ php artisan route:list                             # 6 named routes × 2 locales
   that box. The ring is a `@media (hover: hover)` rule; the disc is a JS module that only runs
   when `(hover: hover) and (pointer: fine)` matches and `prefers-reduced-motion` is off. Both
   are also `display: none` under `forced-colors`, so a touch or high-contrast load gets neither.
+- `── Glass ──` in `resources/css/app.css` — `.project-card`, `.panel`, `.nav-preview`, `.frame`
+  and `.hero-code` hold a translucent two-stop fill instead of a solid one and sit over a fixed
+  `backdrop-filter: blur(14px) saturate(1.3)`, so the cursor disc is literally what the box is
+  made of. Two of the three pointer reactions are registered custom properties (`@property
+  --sheen`, `@property --ring`), which is what lets a radial highlight inside the glass and the
+  ring's radius interpolate; the blur number itself never animates, because animating
+  `backdrop-filter` re-renders the whole backdrop of the box every frame. `--gx`/`--gy` are
+  cleared when the pointer leaves a box, so a pane lit by keyboard focus reflects its own centre
+  rather than wherever the cursor last was. Under `prefers-reduced-motion` the panes stay (frost
+  is not motion) but nothing inside them follows the cursor; under `forced-colors` the blur and
+  the sheen are both turned off.
 - `app/Http/Middleware/SetLocale.php` — locale comes from the URL prefix and is applied
   globally, which is what lets an unmatched path render a Persian 404.
 
@@ -58,8 +69,8 @@ php artisan route:list                             # 6 named routes × 2 locales
 
 | Asset | Raw | Gzip |
 | --- | --- | --- |
-| `app-*.css` | 43.30 kB | 9.49 kB |
-| `app-*.js` | 5.79 kB | 2.18 kB |
+| `app-*.css` | 48.74 kB | 10.24 kB |
+| `app-*.js` | 5.85 kB | 2.20 kB |
 | HTML per page | 11.4 – 31.8 kB | — |
 | Fonts, English | 1 file, 22.3 kB | preloaded |
 | Fonts, Persian | 2 files, 46.5 + 36.4 kB | both preloaded |
@@ -72,12 +83,27 @@ Pointer field cost, sampled over 120 `pointermove` frames at 1280×800: median 1
 the disc, which a `transform` reads, and two on the box under the cursor. Box geometry is read
 only when the pointer changes box, the page scrolls, or the window resizes.
 
+With the glass panes lit (a pointer parked inside a `.project-card`, `--sheen` interpolating on
+every frame): 119 `pointermove` frames, median 16.7 ms, p95 17.3 ms, max 18.7 ms, 0 frames over
+20 ms. The `backdrop-filter` costs nothing measurable while scrolling — 83 scroll frames at a
+median of 16.7 ms both with the blur active and with it forced to `none` — because the blur is a
+fixed value and the backdrop it samples is repainted by the scroll itself, not by a transition.
+
+Contrast in the lit states, probed at the worst-case pixel — the cursor disc's centre and the
+pane's own sheen landing on the same spot, which is the darkest the glass ever gets under the
+brightest light: body ink 12.60:1, muted 7.46:1, brand-violet link text 5.58:1 on a
+`.project-card`, and 5.20:1 for the same violet at the corner of a `.frame`. Every pair stays
+above the WCAG AA floor of 4.5:1; the violet link text in a fully lit pane is below AAA and is
+the cost of the glass, so it is the number to raise if the sheen is ever made stronger.
+
 Accessibility floors verified in the browser: 16 distinct text/background pairs, all passing
 WCAG AA (lowest 4.59:1); `:focus-visible` = 2px solid brand violet with 2px offset; the brand
 mark, nav links, language switcher, menu toggle, links and buttons all reach 44px on touch
 widths while desktop keeps its 40px scale (the inline project-title link stays text-sized and
-is paired with a 44px button); zero horizontal overflow from 320px to 1440px in both
-directions; `prefers-reduced-motion` collapses animation and transition durations globally.
+is paired with a 44px button); no horizontal overflow from 320px to 1440px in either direction
+on any page except `/projects`, whose card grid keeps a 20rem minimum track and scrolls
+horizontally by 20px at exactly 320px (see Outstanding decisions and known issues);
+`prefers-reduced-motion` collapses animation and transition durations globally.
 
 ## Deployment
 
@@ -137,6 +163,16 @@ Content waiting on confirmed facts (nothing here is filled in with guesses):
 - The four added About paragraphs and the skills heading wording need approval.
 - No `og:image` exists, so social previews are text-only. Adding one needs an approved
   visual asset — a raster card cannot be produced from the identity without a decision.
+
+Known layout defect, measured and not yet fixed:
+
+- The projects card grid is `grid-cols-[repeat(auto-fit,minmax(20rem,1fr))]`
+  (`resources/views/pages/projects.blade.php:10`). At a 320px viewport the content column is
+  265px wide but the `minmax()` floor forces the track to 320px, so the card runs past the edge
+  and `documentElement.scrollWidth` is 340 against `innerWidth` 320 — a 20px horizontal scroll
+  on `/en/projects`, and 35px past the left edge on `/fa/projects`. It predates the glass stage
+  and that stage did not touch the file. The one-token fix is `minmax(min(20rem,100%),1fr)`;
+  it needs approval because it changes a rule the approved design pass already shipped.
 
 Housekeeping:
 
